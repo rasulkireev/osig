@@ -36,6 +36,7 @@ gunicorn = "^23.0.0"
 sentry-sdk = {extras = ["django"], version = "^2.14.0"}
 pytest = "^8.3.3"
 pytest-django = "^4.9.0"
+posthog = "^3.6.6"
 
 [tool.poetry.dev-dependencies]
 
