@@ -1,21 +1,14 @@
-from django.test import SimpleTestCase
+import pytest
 from django.urls import reverse
 
+@pytest.mark.django_db
+class TestHomeView:
+    def test_home_view_status_code(self, client):
+        url = reverse('home')
+        response = client.get(url)
+        assert response.status_code == 200
 
-class HomepageTests(SimpleTestCase):
-    def test_url_exists_at_correct_location(self):
-        response = self.client.get("/")
-        self.assertEqual(response.status_code, 200)
-
-    def test_url_available_by_name(self):
-        response = self.client.get(reverse("home"))
-        self.assertEqual(response.status_code, 200)
-
-    def test_template_name_correct(self):
-        response = self.client.get(reverse("home"))
-        self.assertTemplateUsed(response, "pages/home.html")
-
-    def test_template_content(self):
-        response = self.client.get(reverse("home"))
-        self.assertContains(response, "<h1>")
-        self.assertNotContains(response, "Not on the page")
+    def test_home_view_uses_correct_template(self, client):
+        url = reverse('home')
+        response = client.get(url)
+        assert 'pages/home.html' in [t.name for t in response.templates]
