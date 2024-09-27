@@ -33,6 +33,7 @@ opentelemetry-instrumentation-psycopg2 = "^0.48b0"
 opentelemetry-instrumentation-redis = "^0.48b0"
 opentelemetry-instrumentation-logging = "^0.48b0"
 gunicorn = "^23.0.0"
+sentry-sdk = {extras = ["django"], version = "^2.14.0"}
 
 [tool.poetry.dev-dependencies]
 

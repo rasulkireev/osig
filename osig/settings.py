@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import environ
 import structlog
+import sentry_sdk
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -31,7 +32,7 @@ ENVIRONMENT = env("ENVIRONMENT")
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-a7&5bd(i0z*e!2o1up_!jhdxqxe(%ygs)7i+vc*$4o+9zogu%3"
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
@@ -48,6 +49,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
+    "django.contrib.sitemaps",
     "webpack_boilerplate",
     "widget_tweaks",
     "allauth",
@@ -278,3 +281,7 @@ if ENVIRONMENT == "prod":
     LOGGING["loggers"]["osig"]["level"] = env("DJANGO_LOG_LEVEL", default="INFO")
     LOGGING["loggers"]["osig"]["handlers"] = ["json_console"]
     LOGGING["loggers"]["django_structlog"]["handlers"] = ["json_console"]
+
+SENTRY_DSN = env("SENTRY_DSN")
+if ENVIRONMENT == "prod" and SENTRY_DSN:
+    sentry_sdk.init(dsn=env("SENTRY_DSN"))
