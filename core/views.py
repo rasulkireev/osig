@@ -3,9 +3,11 @@ import io
 from django.http import HttpResponse
 from django.views.decorators.http import require_GET
 from django.views.generic import TemplateView
+from django_q.tasks import async_task
 from PIL import Image
 
 from core.image_styles import generate_base_image
+from core.tasks import save_generated_image_to_s3
 from osig.utils import get_osig_logger
 
 logger = get_osig_logger(__name__)
@@ -65,5 +67,7 @@ def generate_image(request):
             eyebrow=eyebrow,
             image_url=image_url,
         )
+
+    async_task(save_generated_image_to_s3, image)
 
     return HttpResponse(image, content_type="image/png")
