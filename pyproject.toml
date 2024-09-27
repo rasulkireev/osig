@@ -1,0 +1,59 @@
+[tool.poetry]
+name = "osig"
+version = "0.1.0"
+description = "Open Source Social Image Generator"
+authors = ["Rasul Kireev <me@rasulkireev.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django-allauth = {extras = ["socialaccount"], version = "^64.0.0"}
+python-webpack-boilerplate = "^1.0.0"
+django-widget-tweaks = "^1.4.12"
+mkdocs = "^1.4.2"
+mkdocstrings = "^0.20.0"
+mkdocs-material = "^9.0.12"
+django = "^5.0.4"
+django-environ = "^0.11.2"
+psycopg2 = "^2.9.9"
+ipython = "^8.27.0"
+django-extensions = "^3.2.3"
+pillow = "^10.4.0"
+django-q2 = "^1.7.2"
+whitenoise = "^6.7.0"
+django-storages = {extras = ["s3"], version = "^1.14.4"}
+structlog = "^24.4.0"
+django-structlog = "^8.1.0"
+markdown = "^3.7"
+
+[tool.poetry.dev-dependencies]
+
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^2.17.1"
+pylint-django = "^2.5.3"
+pre-commit = "^3.2.1"
+mkdocs = "^1.6.0"
+mkdocs-material = "^9.5.23"
+
+[tool.isort]
+profile = "django"
+combine_as_imports = true
+include_trailing_comma = true
+line_length = 120
+multi_line_output = 3
+
+[tool.black]
+line-length = 120
+target-version = ['py39']
+include = '\.pyi?$'
+
+[tool.djlint]
+profile="django"
+ignore = "H031"
+
+[tool.ruff]
+line-length = 120
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
