@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load widget_tweaks %}
- {% load socialaccount %}
+{% load socialaccount %}
 
 {% block content %}
 <div class="flex justify-center items-center px-4 py-12 my-4 sm:px-6 lg:px-8">
@@ -50,7 +50,7 @@
 
         <div>
             <button type="submit"
-                    class="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent border-solid rounded-md group hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    class="flex relative justify-center px-4 py-2 w-full text-sm font-medium text-white bg-blue-600 rounded-md border border-transparent border-solid group hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                 <span class="flex absolute inset-y-0 left-0 items-center pl-3">
                     <!-- Heroicon name: solid/lock-closed -->
                     <svg class="w-5 h-5 text-blue-500 group-hover:text-blue-400"
@@ -87,7 +87,6 @@
           </a>
         </div>
       </div>
-
 
     </div>
   </div>

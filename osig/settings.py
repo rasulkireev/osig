@@ -12,10 +12,10 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 import os
 from pathlib import Path
-import environ
-import structlog
-import sentry_sdk
 
+import environ
+import sentry_sdk
+import structlog
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,7 +35,7 @@ ENVIRONMENT = env("ENVIRONMENT")
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")
@@ -148,12 +148,12 @@ STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3.S3Storage",
         "OPTIONS": {
-          "bucket_name": bucket_name,
-          "default_acl": "public-read",
-          "region_name": "eu-east-1",
-          "endpoint_url": env("AWS_S3_ENDPOINT_URL"),
-          "access_key": env("AWS_ACCESS_KEY_ID"),
-          "secret_key": env("AWS_SECRET_ACCESS_KEY"),
+            "bucket_name": bucket_name,
+            "default_acl": "public-read",
+            "region_name": "eu-east-1",
+            "endpoint_url": env("AWS_S3_ENDPOINT_URL"),
+            "access_key": env("AWS_ACCESS_KEY_ID"),
+            "secret_key": env("AWS_SECRET_ACCESS_KEY"),
         },
     },
     "staticfiles": {

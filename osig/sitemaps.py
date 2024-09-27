@@ -29,6 +29,7 @@ class StaticViewSitemap(sitemaps.Sitemap):
         """
         return reverse(item)
 
+
 sitemaps = {
     "static": StaticViewSitemap,
 }
