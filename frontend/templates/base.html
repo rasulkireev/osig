@@ -15,14 +15,14 @@
   <link rel="icon" type="image/png" sizes="16x16 32x32 500x500" href="{% static 'vendors/images/logo.png' %}" />
 
   {% block meta %}
-  <title>osig</title>
+  <title>OSIG</title>
   <meta name="description" content="Open Source Social Image Generator" />
   <meta name="keywords" content="django" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://{{ request.get_host }}/" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="osig" />
+  <meta property="og:title" content="OSIG" />
   <meta property="og:url" content="https://{{ request.get_host }}/" />
   <meta property="og:description" content="Open Source Social Image Generator" />
   <meta property="og:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
@@ -31,7 +31,7 @@
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:creator" content="@rasulkireev" />
   <meta name="twitter:site" content="@rasulkireev" />
-  <meta name="twitter:title" content="osig" />
+  <meta name="twitter:title" content="OSIG" />
   <meta name="twitter:description" content="Open Source Social Image Generator" />
   <meta name="twitter:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
   {% endblock meta %}
@@ -50,8 +50,8 @@
       <nav class="flex justify-between items-center p-6 mx-auto max-w-7xl lg:px-8" aria-label="Global">
         <div class="flex gap-x-12 items-center">
           <a href="{% url 'home' %}" class="flex flex-row justify-between items-center p-1.5 -m-1.5 space-x-2">
-            <img class="w-auto h-8" src="{% static 'vendors/images/logo.png' %}" alt="osig Logo" />
-            <span class="text-base font-semibold text-gray-700">osig</span>
+            <img class="w-auto h-8" src="{% static 'vendors/images/logo.png' %}" alt="OSIG Logo" />
+            <span class="text-base font-semibold text-gray-700">OSIG</span>
           </a>
         </div>
         <div class="flex lg:hidden">
@@ -100,8 +100,8 @@
           class="overflow-y-auto fixed inset-y-0 right-0 z-10 px-6 py-6 w-full bg-white sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
           <div class="flex justify-between items-center">
             <a href="{% url 'home' %}" class="p-1.5 -m-1.5">
-              <span class="sr-only">osig</span>
-              <img class="w-auto h-8" src="{% static 'vendors/images/logo.png' %}" alt="osig Logo" />
+              <span class="sr-only">OSIG</span>
+              <img class="w-auto h-8" src="{% static 'vendors/images/logo.png' %}" alt="OSIG Logo" />
             </a>
             <button data-action="dropdown#toggle click@window->dropdown#hide" type="button"
               class="p-2.5 -m-2.5 text-gray-700 rounded-md">
@@ -145,7 +145,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "osig",
+      "name": "OSIG",
       "description": "Open Source Social Image Generator",
       "thumbnailUrl": "https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
       "url": "https://{{ request.get_host }}/",

@@ -5,4 +5,5 @@ from core import views
 urlpatterns = [
     path("", views.HomeView.as_view(), name="home"),
     path("blank-square.png", views.blank_square_image, name="blank_square_image"),
+    path("g", views.generate_image, name="generate_image"),
 ]

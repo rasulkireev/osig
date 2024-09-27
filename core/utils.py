@@ -1,4 +1,9 @@
 from django.forms.utils import ErrorList
+from PIL import ImageStat
+
+from osig.utils import get_osig_logger
+
+logger = get_osig_logger(__name__)
 
 
 class DivErrorList(ErrorList):
@@ -9,7 +14,7 @@ class DivErrorList(ErrorList):
         if not self:
             return ""
         return f"""
-            <div class="p-4 my-4 border border-red-600 border-solid rounded-md bg-red-50">
+            <div class="p-4 my-4 bg-red-50 rounded-md border border-red-600 border-solid">
               <div class="flex">
                 <div class="flex-shrink-0">
                   <!-- Heroicon name: solid/x-circle -->
@@ -23,3 +28,13 @@ class DivErrorList(ErrorList):
               </div>
             </div>
          """
+
+
+def is_dark_image(img):
+    gray = img.convert("L")
+    stat = ImageStat.Stat(gray)
+    # Calculate the mean brightness
+    mean_brightness = stat.mean[0]
+    dark = mean_brightness < 128
+    logger.info("Checking the darkness of the image", dark=dark)
+    return dark
