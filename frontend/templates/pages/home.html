@@ -1,23 +1,87 @@
 {% extends "base.html" %}
+{% load webpack_loader static %}
 
 {% block content %}
-<div class="isolate relative px-6 mt-16 sm:mt-24 lg:px-8">
-  <div class="isolate relative px-6 mt-16 sm:mt-24 lg:px-8">
-    <div class="mx-auto text-center">
-        <h1 class="mx-auto mb-6 max-w-2xl text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-          Open Source Social Image Generator
-        </h1>
-        <div class="flex flex-col gap-x-6 justify-center items-center mt-10 md:flex-row md:items-end">
-          <a
-            class="block px-3 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            href="{% url 'account_login' %}"
-          >
-            Get Started
-          </a>
+<div class="container px-4 py-8 mx-auto">
+  <div class="mx-auto max-w-3xl">
+    <h1 class="mb-8 text-3xl font-bold text-center">Generate Beautiful OG Images for
+      <span class="block text-blue-600">Your Site</span>
+    </h1>
+    <div class="flex flex-col gap-x-6 justify-center items-center mt-10 md:flex-row md:items-end">
+      <a
+        class="block px-3 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+        href="{% url 'account_login' %}"
+      >
+        Get Started
+      </a>
+      <span class="pb-1 font-bold">or give it a go 👇</span>
+    </div>
+
+    <div class="flex flex-col gap-8 mt-10 md:flex-row">
+      <div class="w-full md:w-1/2">
+        <form data-controller="image-generator" data-action="submit->image-generator#generate" class="space-y-4">
+          {% csrf_token %}
+          <div>
+            <label for="site" class="block mb-1 text-sm font-medium text-gray-700">Size</label>
+            <select id="site" name="site" class="px-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              {% for value, label in site_choices %}
+                <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="title" class="block mb-1 text-sm font-medium text-gray-700">Title</label>
+            <input type="text" id="title" name="title" class="px-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+          </div>
+
+          <div>
+            <label for="subtitle" class="block mb-1 text-sm font-medium text-gray-700">Subtitle</label>
+            <input type="text" id="subtitle" name="subtitle" class="px-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+          </div>
+
+          <div>
+            <label for="eyebrow" class="block mb-1 text-sm font-medium text-gray-700">Eyebrow</label>
+            <input type="text" id="eyebrow" name="eyebrow" class="px-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+          </div>
+
+          <div>
+            <label for="image_url" class="block mb-1 text-sm font-medium text-gray-700">Background Image URL</label>
+            <input type="url" id="image_url" name="image_url" class="px-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+          </div>
+
+          <div>
+            <label for="font" class="block mb-1 text-sm font-medium text-gray-700">Font</label>
+            <select id="font" name="font" class="px-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              {% for value, label in font_choices %}
+                <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="style" class="block mb-1 text-sm font-medium text-gray-700">Style</label>
+            <select id="style" name="style" class="px-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              {% for value, label in style_choices %}
+                <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <button type="submit" class="px-4 py-2 w-full text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              Generate Image
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="w-full md:w-1/2 md:mt-10">
+        <div id="generated-image" class="flex overflow-hidden justify-center items-center bg-gray-100 rounded-lg aspect-video">
+          <p class="text-gray-500">Generated image will appear here</p>
         </div>
+      </div>
     </div>
   </div>
 </div>
-
-<div data-controller="testing"></div>
 {% endblock content %}
