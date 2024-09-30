@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='profile',
             name='key',
-            field=models.CharField(default=core.utils.generate_random_key, max_length=10, null=True),
+            field=models.CharField(default=core.utils.generate_random_key, max_length=10, unique=True),
         ),
     ]
