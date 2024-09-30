@@ -1,12 +1,21 @@
 import io
 
+from allauth.account.models import EmailAddress
+from allauth.account.utils import send_email_confirmation
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponse
+from django.shortcuts import redirect
+from django.urls import reverse, reverse_lazy
 from django.views.decorators.http import require_GET
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, UpdateView
 from django_q.tasks import async_task
 from PIL import Image
 
+from core.forms import ProfileUpdateForm
 from core.image_styles import generate_base_image
+from core.models import Profile
 from core.tasks import save_generated_image_to_s3
 from osig.utils import get_osig_logger
 
@@ -22,6 +31,36 @@ class HomeView(TemplateView):
         context["style_choices"] = [("base", "Base")]
         context["font_choices"] = [("helvetica", "Helvetica"), ("markerfelt", "Marker Felt"), ("papyrus", "Papyrus")]
         return context
+
+
+class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    login_url = "account_login"
+    model = Profile
+    form_class = ProfileUpdateForm
+    success_message = "User Profile Updated"
+    success_url = reverse_lazy("settings")
+    template_name = "pages/user-settings.html"
+
+    def get_object(self):
+        return self.request.user.profile
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        email_address = EmailAddress.objects.get_for_user(user, user.email)
+        context["email_verified"] = email_address.verified
+        context["resend_confirmation_url"] = reverse("resend_confirmation")
+
+        return context
+
+
+@login_required
+def resend_confirmation_email(request):
+    user = request.user
+    send_email_confirmation(request, user, EmailAddress.objects.get_for_user(user, user.email))
+
+    return redirect("settings")
 
 
 def blank_square_image(request):

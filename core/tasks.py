@@ -1,5 +1,7 @@
 import uuid
 
+import requests
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 
@@ -16,3 +18,21 @@ def save_generated_image_to_s3(image):
     default_storage.save(filename, file_content)
 
     return f"Saved image: {image_path}"
+
+
+def add_email_to_buttondown(email, tag):
+    data = {
+        "email_address": str(email),
+        "metadata": {"source": tag},
+        "tags": [tag],
+        "referrer_url": "https://osig.app",
+        "subscriber_type": "regular",
+    }
+
+    r = requests.post(
+        "https://api.buttondown.email/v1/subscribers",
+        headers={"Authorization": f"Token {settings.BUTTONDOWN_API_KEY}"},
+        json=data,
+    )
+
+    return r.json()

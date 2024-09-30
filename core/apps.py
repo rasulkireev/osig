@@ -7,5 +7,7 @@ class CoreConfig(AppConfig):
     name = "core"
 
     def ready(self):
+        import core.signals  # noqa
+
         posthog.api_key = "phc_wa2RfooG5BAVE9zHHGkeEyF52nJTbwmcjdjrH32ZKl6"
         posthog.host = "https://us.i.posthog.com"

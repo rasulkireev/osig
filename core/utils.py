@@ -1,3 +1,6 @@
+import random
+import string
+
 from django.forms.utils import ErrorList
 
 from osig.utils import get_osig_logger
@@ -27,3 +30,8 @@ class DivErrorList(ErrorList):
               </div>
             </div>
          """
+
+
+def generate_random_key(*args, **kwargs):
+    characters = string.ascii_letters + string.digits
+    return "".join(random.choice(characters) for _ in range(10))
