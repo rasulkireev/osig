@@ -22,18 +22,16 @@ def save_generated_image_to_s3(image):
 
 def add_email_to_buttondown(email, tag):
     data = {
-        "email": str(email),
+        "email_address": str(email),
         "metadata": {"source": tag},
         "tags": [tag],
-        "referrer_url": "https://builtwithdjango.com",
-        "subscriber_type": "unactivated",
+        "referrer_url": "https://osig.app",
+        "subscriber_type": "regular",
     }
-    if tag == "user":
-        data["subscriber_type"] = "regular"
 
     r = requests.post(
         "https://api.buttondown.email/v1/subscribers",
-        headers={"Authorization": f"Token {settings.BUTTONDOWN_API_TOKEN}"},
+        headers={"Authorization": f"Token {settings.BUTTONDOWN_API_KEY}"},
         json=data,
     )
 

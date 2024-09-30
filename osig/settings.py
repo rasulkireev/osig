@@ -302,3 +302,5 @@ if ENVIRONMENT == "prod":
 SENTRY_DSN = env("SENTRY_DSN")
 if ENVIRONMENT == "prod" and SENTRY_DSN:
     sentry_sdk.init(dsn=env("SENTRY_DSN"))
+
+BUTTONDOWN_API_KEY = env("BUTTONDOWN_API_KEY")
