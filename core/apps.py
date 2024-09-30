@@ -1,5 +1,6 @@
 import posthog
 from django.apps import AppConfig
+from django.conf import settings
 
 
 class CoreConfig(AppConfig):
@@ -9,5 +10,6 @@ class CoreConfig(AppConfig):
     def ready(self):
         import core.signals  # noqa
 
-        posthog.api_key = "phc_wa2RfooG5BAVE9zHHGkeEyF52nJTbwmcjdjrH32ZKl6"
-        posthog.host = "https://us.i.posthog.com"
+        if settings.ENVIRONMENT == "prod":
+            posthog.api_key = settings.POSTHOG_API_KEY
+            posthog.host = "https://us.i.posthog.com"
