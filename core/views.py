@@ -115,15 +115,6 @@ def resend_confirmation_email(request):
     return redirect("settings")
 
 
-class CreateCheckoutSessionView(LoginRequiredMixin, TemplateView):
-    template_name = "checkout.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        return context
-
-
 def blank_square_image(request):
     size = (200, 200)
     image = Image.new("RGB", size, color="white")
