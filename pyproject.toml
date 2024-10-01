@@ -39,6 +39,8 @@ pytest-django = "^4.9.0"
 posthog = "^3.6.6"
 redis = "^5.0.8"
 django-anymail = {extras = ["mailgun"], version = "^12.0"}
+dj-stripe = "~2.8.4"
+stripe = "~4.0.0"
 
 [tool.poetry.dev-dependencies]
 

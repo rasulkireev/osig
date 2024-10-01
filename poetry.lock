@@ -506,6 +506,25 @@ files = [
 ]
 
 [[package]]
+name = "dj-stripe"
+version = "2.8.4"
+description = "Django + Stripe made easy"
+optional = false
+python-versions = "<4.0.0,>=3.8.0"
+files = [
+    {file = "dj_stripe-2.8.4-py3-none-any.whl", hash = "sha256:e4665ffc9b54b558310b157b4f67aa92ec6936c0c4e21e13ddeaac90c25b90b1"},
+    {file = "dj_stripe-2.8.4.tar.gz", hash = "sha256:2abfc4f690af4dd65d57dfbb5d36ffaf63b9225f0a5ac95ea21783c80a95982b"},
+]
+
+[package.dependencies]
+django = ">=3.2"
+stripe = ">=2.48.0,<5.0.0"
+
+[package.extras]
+mysql = ["mysqlclient (>=1.4.0)"]
+postgres = ["psycopg2 (>=2.8.5,<3.0.0)"]
+
+[[package]]
 name = "django"
 version = "5.0.4"
 description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
@@ -2517,6 +2536,20 @@ pure-eval = "*"
 tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
 
 [[package]]
+name = "stripe"
+version = "4.0.2"
+description = "Python bindings for the Stripe API"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+files = [
+    {file = "stripe-4.0.2-py2.py3-none-any.whl", hash = "sha256:de2d532764d07aca0b974ac4ce8d1feee4007cf8c3c2cf6070c16b4cdbb4eb6d"},
+    {file = "stripe-4.0.2.tar.gz", hash = "sha256:d085b3e9450a5550912f476c6dbb2bafa129e485e24d6f4047c5094ff08d5de2"},
+]
+
+[package.dependencies]
+requests = {version = ">=2.20", markers = "python_version >= \"3.0\""}
+
+[[package]]
 name = "structlog"
 version = "24.4.0"
 description = "Structured Logging for Python"
@@ -2810,4 +2843,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "5f99281d925324ee6409ece60f5cd566047346ebc6e9a37cf76a253568e0ca4b"
+content-hash = "943bbe00e1db16db7986849a038327d1f6ec567c75932b3558de73b4417969a1"

@@ -7,3 +7,6 @@ shell:
 
 test:
 	docker compose run --rm backend pytest
+
+test-webhook:
+	docker compose run --rm stripe trigger customer.subscription.created

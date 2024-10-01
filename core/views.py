@@ -1,5 +1,6 @@
 import io
 
+import stripe
 from allauth.account.models import EmailAddress
 from allauth.account.utils import send_email_confirmation
 from django.contrib.auth.decorators import login_required
@@ -11,6 +12,7 @@ from django.urls import reverse, reverse_lazy
 from django.views.decorators.http import require_GET
 from django.views.generic import TemplateView, UpdateView
 from django_q.tasks import async_task
+from djstripe import models as djstripe_models, settings as djstripe_settings
 from PIL import Image
 
 from core.forms import ProfileUpdateForm
@@ -20,6 +22,8 @@ from core.tasks import save_generated_image_to_s3
 from osig.utils import get_osig_logger
 
 logger = get_osig_logger(__name__)
+
+stripe.api_key = djstripe_settings.djstripe_settings.STRIPE_SECRET_KEY
 
 
 class HomeView(TemplateView):
@@ -47,12 +51,60 @@ class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-
         email_address = EmailAddress.objects.get_for_user(user, user.email)
+
         context["email_verified"] = email_address.verified
         context["resend_confirmation_url"] = reverse("resend_confirmation")
+        context["has_pro_subscription"] = user.profile.subscription is not None
 
         return context
+
+
+def create_checkout_session(request, pk):
+    user = request.user
+
+    pro_product = djstripe_models.Product.objects.get(name="Pro Subscription")
+    price = pro_product.prices.filter(active=True).first()
+    customer, _ = djstripe_models.Customer.get_or_create(subscriber=user)
+
+    profile = user.profile
+    profile.customer = customer
+    profile.save(update_fields=["customer"])
+
+    checkout_session = stripe.checkout.Session.create(
+        customer=customer.id,
+        payment_method_types=["card"],
+        allow_promotion_codes=True,
+        automatic_tax={"enabled": True},
+        line_items=[
+            {
+                "price": price.id,
+                "quantity": 1,
+            }
+        ],
+        mode="subscription",
+        success_url=request.build_absolute_uri(reverse_lazy("home")),
+        cancel_url=request.build_absolute_uri(reverse_lazy("home")),
+        customer_update={
+            "address": "auto",
+        },
+        metadata={"user_id": user.id, "pk": pk, "price_id": price.id},
+    )
+
+    return redirect(checkout_session.url, code=303)
+
+
+@login_required
+def create_customer_portal_session(request):
+    user = request.user
+    customer = djstripe_models.Customer.objects.get(subscriber=user)
+
+    session = stripe.billing_portal.Session.create(
+        customer=customer.id,
+        return_url=request.build_absolute_uri(reverse_lazy("home")),
+    )
+
+    return redirect(session.url, code=303)
 
 
 @login_required
@@ -61,6 +113,15 @@ def resend_confirmation_email(request):
     send_email_confirmation(request, user, EmailAddress.objects.get_for_user(user, user.email))
 
     return redirect("settings")
+
+
+class CreateCheckoutSessionView(LoginRequiredMixin, TemplateView):
+    template_name = "checkout.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        return context
 
 
 def blank_square_image(request):
