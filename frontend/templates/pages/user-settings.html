@@ -18,13 +18,26 @@
     {% if not has_pro_subscription %}
     <div class="p-6 mt-6 mb-8 bg-gray-50 rounded-lg">
       <h3 class="mb-4 text-lg font-medium leading-6 text-gray-900">Upgrade Your Account</h3>
-      <p class="mb-4 text-sm text-gray-600">Unlock premium features by upgrading to our Pro plan.</p>
-      <div class="rounded-md shadow">
-        <a
-          href="{% url 'user_upgrade_checkout_session' pk=user.id %}"
-          class="flex justify-center items-center px-5 py-3 text-base font-medium text-white bg-blue-600 rounded-md border border-transparent hover:bg-blue-700">
-          Upgrade to Pro
-        </a>
+      <p class="mb-4 text-sm text-gray-600">Choose a plan that suits your needs:</p>
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div class="rounded-md shadow">
+          <a href="{% url 'user_upgrade_checkout_session' pk=user.id plan='monthly' %}"
+             class="flex justify-center items-center px-4 py-3 h-full text-sm font-medium text-white bg-blue-600 rounded-md border border-transparent transition duration-150 ease-in-out md:text-base hover:bg-blue-700">
+            Monthly - $10/m
+          </a>
+        </div>
+        <div class="rounded-md shadow">
+          <a href="{% url 'user_upgrade_checkout_session' pk=user.id plan='yearly' %}"
+             class="flex justify-center items-center px-4 py-3 h-full text-sm font-medium text-white bg-blue-600 rounded-md border border-transparent transition duration-150 ease-in-out md:text-base hover:bg-blue-700">
+            Yearly - $100/y
+          </a>
+        </div>
+        <div class="rounded-md shadow">
+          <a href="{% url 'user_upgrade_checkout_session' pk=user.id plan='one-time' %}"
+             class="flex justify-center items-center px-4 py-3 h-full text-sm font-medium text-white bg-blue-600 rounded-md border border-transparent transition duration-150 ease-in-out md:text-base hover:bg-blue-700">
+            One-time - $500
+          </a>
+        </div>
       </div>
     </div>
     {% else %}

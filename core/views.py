@@ -60,11 +60,11 @@ class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return context
 
 
-def create_checkout_session(request, pk):
+def create_checkout_session(request, pk, plan):
     user = request.user
 
-    pro_product = djstripe_models.Product.objects.get(name="Pro Subscription")
-    price = pro_product.prices.filter(active=True).first()
+    product = djstripe_models.Product.objects.get(name=plan)
+    price = product.prices.filter(active=True).first()
     customer, _ = djstripe_models.Customer.get_or_create(subscriber=user)
 
     profile = user.profile
@@ -82,7 +82,7 @@ def create_checkout_session(request, pk):
                 "quantity": 1,
             }
         ],
-        mode="subscription",
+        mode="subscription" if plan != "one-time" else "payment",
         success_url=request.build_absolute_uri(reverse_lazy("home")),
         cancel_url=request.build_absolute_uri(reverse_lazy("home")),
         customer_update={
