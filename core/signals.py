@@ -4,7 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django_q.tasks import async_task
 
-from core.models import Profile
+from core.models import Profile, ProfileStates
 from core.tasks import add_email_to_buttondown
 from osig.utils import get_osig_logger
 
@@ -19,7 +19,10 @@ def create_user_profile(sender, instance, created, **kwargs):
         user.is_superuser = True
         user.save()
     if created:
-        Profile.objects.create(user=instance)
+        profile = Profile.objects.create(user=instance)
+        profile.track_state_change(
+            to_state=ProfileStates.SIGNED_UP,
+        )
 
 
 @receiver(post_save, sender=User)
