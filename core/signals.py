@@ -13,21 +13,21 @@ logger = get_osig_logger(__name__)
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
-    user = instance
-    if user.id == 1:
-        user.is_staff = True
-        user.is_superuser = True
-        user.save()
     if created:
         profile = Profile.objects.create(user=instance)
         profile.track_state_change(
             to_state=ProfileStates.SIGNED_UP,
         )
 
+    if instance.id == 1:
+        # Use update() to avoid triggering the signal again
+        User.objects.filter(id=1).update(is_staff=True, is_superuser=True)
+
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+    if hasattr(instance, "profile"):
+        instance.profile.save()
 
 
 @receiver(email_confirmed)

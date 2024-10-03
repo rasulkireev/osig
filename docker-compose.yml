@@ -69,7 +69,7 @@ services:
       - "8025:8025"
 
   stripe:
-    image: stripe/stripe-cli:v1.21.7
+    image: stripe/stripe-cli:latest
     command: [
       "listen",
       "-H", "x-djstripe-webhook-secret: ${DJSTRIPE_WEBHOOK_SECRET}",
@@ -79,6 +79,9 @@ services:
       - STRIPE_API_KEY=${STRIPE_TEST_SECRET_KEY}
       - STRIPE_DEVICE_NAME=djstripe_docker
       - DJSTRIPE_WEBHOOK_SECRET=${DJSTRIPE_WEBHOOK_SECRET}
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
 
 volumes:
   postgres_data:
