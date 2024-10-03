@@ -1,8 +1,10 @@
 import io
+from urllib.parse import urlencode
 
 import stripe
 from allauth.account.models import EmailAddress
 from allauth.account.utils import send_email_confirmation
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
@@ -34,6 +36,14 @@ class HomeView(TemplateView):
         context["site_choices"] = [("x", "X (Twitter)"), ("facebook", "Facebook")]
         context["style_choices"] = [("base", "Base")]
         context["font_choices"] = [("helvetica", "Helvetica"), ("markerfelt", "Marker Felt"), ("papyrus", "Papyrus")]
+
+        payment_status = self.request.GET.get("payment")
+        if payment_status == "success":
+            messages.success(self.request, "Thanks for subscribing, I hope you enjoy the app!")
+            context["show_confetti"] = True
+        elif payment_status == "failed":
+            messages.error(self.request, "Something went wrong with the payment.")
+
         return context
 
 
@@ -71,6 +81,15 @@ def create_checkout_session(request, pk, plan):
     profile.customer = customer
     profile.save(update_fields=["customer"])
 
+    base_success_url = request.build_absolute_uri(reverse("home"))
+    base_cancel_url = request.build_absolute_uri(reverse("home"))
+
+    success_params = {"payment": "success"}
+    success_url = f"{base_success_url}?{urlencode(success_params)}"
+
+    cancel_params = {"payment": "failed"}
+    cancel_url = f"{base_cancel_url}?{urlencode(cancel_params)}"
+
     checkout_session = stripe.checkout.Session.create(
         customer=customer.id,
         payment_method_types=["card"],
@@ -83,8 +102,8 @@ def create_checkout_session(request, pk, plan):
             }
         ],
         mode="subscription" if plan != "one-time" else "payment",
-        success_url=request.build_absolute_uri(reverse_lazy("home")),
-        cancel_url=request.build_absolute_uri(reverse_lazy("home")),
+        success_url=success_url,
+        cancel_url=cancel_url,
         customer_update={
             "address": "auto",
         },
@@ -101,7 +120,7 @@ def create_customer_portal_session(request):
 
     session = stripe.billing_portal.Session.create(
         customer=customer.id,
-        return_url=request.build_absolute_uri(reverse_lazy("home")),
+        return_url=request.build_absolute_uri(reverse("home")),
     )
 
     return redirect(session.url, code=303)

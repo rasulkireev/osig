@@ -17,6 +17,7 @@ class Profile(BaseModel):
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
+        related_name="profile",
         help_text="The user's Stripe Subscription object, if it exists",
     )
     customer = models.ForeignKey(
@@ -24,6 +25,7 @@ class Profile(BaseModel):
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
+        related_name="profile",
         help_text="The user's Stripe Customer object, if it exists",
     )
 
