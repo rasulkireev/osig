@@ -56,7 +56,7 @@ def generate_base_image(
 
     # Calculate text positions
     left_margin = int(width * 0.05)
-    top_margin = int(height * 0.4)
+    top_margin = int(height * 0.3)
     text_spacing = int(height * 0.02)
 
     def draw_wrapped_text(text, font, max_width, y_position, is_title=False):
@@ -100,7 +100,7 @@ def generate_base_image(
         current_y += text_spacing * 3.5
 
     if subtitle:
-        subtitle = subtitle[:150]
+        subtitle = subtitle[:147] + "..."
         draw_wrapped_text(subtitle, subtitle_font, max_text_width, current_y)
 
     if not has_pro_subscription:
