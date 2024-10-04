@@ -126,7 +126,7 @@ def add_watermark(img, draw, width, height):
 
     # Calculate position (bottom right corner)
     x = width - text_width - int(width * 0.02)
-    y = height - text_height - int(height * 0.06)
+    y = height - text_height - int(height * 0.08)
 
     # Draw the watermark
     draw.text((x, y), watermark_text, font=watermark_font, fill=watermark_color)
