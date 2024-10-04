@@ -100,7 +100,8 @@ def generate_base_image(
         current_y += text_spacing * 3.5
 
     if subtitle:
-        subtitle = subtitle[:147] + "..."
+        if len(subtitle) > 150:
+            subtitle = subtitle[:147] + "..."
         draw_wrapped_text(subtitle, subtitle_font, max_text_width, current_y)
 
     if not has_pro_subscription:
