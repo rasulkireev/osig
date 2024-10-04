@@ -124,8 +124,8 @@ def add_watermark(img, draw, width, height):
     text_height = bbox[3] - bbox[1]
 
     # Calculate position (bottom right corner)
-    x = width - text_width - int(width * 0.02)  # 2% padding from right
-    y = height - text_height - int(height * 0.04)  # 2% padding from bottom
+    x = width - text_width - int(width * 0.02)
+    y = height - text_height - int(height * 0.06)
 
     # Draw the watermark
     draw.text((x, y), watermark_text, font=watermark_font, fill=watermark_color)
