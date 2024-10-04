@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from core.base_models import BaseModel
-from core.utils import generate_random_key
+from core.model_utils import generate_random_key
 from osig.utils import get_osig_logger
 
 logger = get_osig_logger(__name__)

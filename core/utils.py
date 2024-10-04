@@ -1,8 +1,6 @@
-import random
-import string
-
 from django.forms.utils import ErrorList
 
+from core.models import Profile
 from osig.utils import get_osig_logger
 
 logger = get_osig_logger(__name__)
@@ -32,6 +30,13 @@ class DivErrorList(ErrorList):
          """
 
 
-def generate_random_key(*args, **kwargs):
-    characters = string.ascii_letters + string.digits
-    return "".join(random.choice(characters) for _ in range(10))
+def check_if_profile_has_pro_subscription(profile_id):
+    has_pro_subscription = False
+    if profile_id:
+        try:
+            profile = Profile.objects.get(id=profile_id)
+            has_pro_subscription = profile.subscription is not None
+        except Profile.DoesNotExist:
+            logger.error("Profile does not exist", profile_id=profile_id)
+
+    return has_pro_subscription

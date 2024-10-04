@@ -21,6 +21,7 @@ from core.forms import ProfileUpdateForm
 from core.image_styles import generate_base_image
 from core.models import Profile
 from core.tasks import save_generated_image_to_s3
+from core.utils import check_if_profile_has_pro_subscription
 from osig.utils import get_osig_logger
 
 logger = get_osig_logger(__name__)
@@ -37,12 +38,39 @@ class HomeView(TemplateView):
         context["style_choices"] = [("base", "Base")]
         context["font_choices"] = [("helvetica", "Helvetica"), ("markerfelt", "Marker Felt"), ("papyrus", "Papyrus")]
 
+        if self.request.user.is_authenticated:
+            try:
+                profile = self.request.user.profile
+                context["user_key"] = profile.key
+            except Profile.DoesNotExist:
+                context["user_key"] = None
+        else:
+            context["user_key"] = None
+
         payment_status = self.request.GET.get("payment")
         if payment_status == "success":
             messages.success(self.request, "Thanks for subscribing, I hope you enjoy the app!")
             context["show_confetti"] = True
         elif payment_status == "failed":
             messages.error(self.request, "Something went wrong with the payment.")
+
+        return context
+
+
+class PricingView(TemplateView):
+    template_name = "pages/pricing.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_authenticated:
+            try:
+                profile = self.request.user.profile
+                context["has_pro_subscription"] = check_if_profile_has_pro_subscription(profile.id)
+            except Profile.DoesNotExist:
+                context["has_pro_subscription"] = False
+        else:
+            context["has_pro_subscription"] = False
 
         return context
 
@@ -148,6 +176,7 @@ def blank_square_image(request):
 
 @require_GET
 def generate_image(request):
+    key = request.GET.get("key", "")
     style = request.GET.get("style", "base")
     site = request.GET.get("site", "x")
     font = request.GET.get("font")
@@ -156,8 +185,16 @@ def generate_image(request):
     eyebrow = request.GET.get("eyebrow")
     image_url = request.GET.get("image_url")
 
+    profile_id = None
+    if not key:
+        style = "base"
+        font = "helvetica"
+    else:
+        profile_id = Profile.objects.get(key=key).id
+
     logger.info(
         "Generating image",
+        profile_id=profile_id,
         site=site,
         font=font,
         title=title,
@@ -170,6 +207,7 @@ def generate_image(request):
         logger.info("Printing Cool Image")
     else:
         image = generate_base_image(
+            profile_id=profile_id,
             site=site,
             font=font,
             title=title,

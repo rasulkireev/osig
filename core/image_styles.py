@@ -5,12 +5,14 @@ import requests
 from django.conf import settings
 from PIL import Image, ImageDraw, ImageFont
 
+from core.utils import check_if_profile_has_pro_subscription
 from osig.utils import get_osig_logger
 
 logger = get_osig_logger(__name__)
 
 
 def generate_base_image(
+    profile_id,
     site,
     font,
     title,
@@ -18,6 +20,7 @@ def generate_base_image(
     eyebrow,
     image_url,
 ):
+    has_pro_subscription = check_if_profile_has_pro_subscription(profile_id)
 
     if site.lower() == "facebook":
         width, height = 1200, 630
@@ -99,9 +102,30 @@ def generate_base_image(
     if subtitle:
         draw_wrapped_text(subtitle, subtitle_font, max_text_width, current_y)
 
+    if not has_pro_subscription:
+        add_watermark(img, draw, width, height)
+
     buffer = io.BytesIO()
     img = img.convert("RGB")
     img.save(buffer, format="PNG")
     buffer.seek(0)
 
     return buffer
+
+
+def add_watermark(img, draw, width, height):
+    watermark_text = "made with osig.app"
+    watermark_font = ImageFont.load_default().font_variant(size=int(height * 0.05))
+    watermark_color = (255, 255, 255, 128)  # White with 50% opacity
+
+    # Get the size of the watermark text
+    bbox = watermark_font.getbbox(watermark_text)
+    text_width = bbox[2] - bbox[0]
+    text_height = bbox[3] - bbox[1]
+
+    # Calculate position (bottom right corner)
+    x = width - text_width - int(width * 0.02)  # 2% padding from right
+    y = height - text_height - int(height * 0.04)  # 2% padding from bottom
+
+    # Draw the watermark
+    draw.text((x, y), watermark_text, font=watermark_font, fill=watermark_color)
