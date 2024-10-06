@@ -34,17 +34,7 @@ def add_watermark(img, draw, width, height):
 
 
 def draw_wrapped_text(
-    draw,
-    text,
-    font,
-    max_width,
-    y_position,
-    text_spacing,
-    text_color,
-    width=None,
-    is_title=False,
-    height=None,
-    align="left",
+    draw, text, font, max_width, y_position, text_spacing, text_color, width, align="left", is_title=False, height=None
 ):
     words = text.split()
     lines = []
@@ -64,21 +54,18 @@ def draw_wrapped_text(
 
     for line in lines:
         bbox = font.getbbox(line)
-        if align == "center" and width:
-            left_margin = (width - bbox[2]) // 2
-        elif align == "left":
-            left_margin = 0
-        else:
-            raise ValueError("Unsupported alignment. Use 'left' or 'center'.")
+        left_margin = (width - bbox[2]) // 2 if align == "center" else 0
 
-        if is_title:
-            bold_offset = int(height * 0.002) if height else 1
+        if is_title and height:
+            bold_offset = int(height * 0.002)
             for offset_x in range(-bold_offset - 1, bold_offset + 1):
                 for offset_y in range(-bold_offset, bold_offset + 1):
                     draw.text((left_margin + offset_x, y_position + offset_y), line, font=font, fill=text_color)
         else:
             draw.text((left_margin, y_position), line, font=font, fill=text_color)
+
         y_position += bbox[3] - bbox[1] + text_spacing
+
     return y_position
 
 

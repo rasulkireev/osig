@@ -76,8 +76,6 @@ def generate_base_image(
         return y_position
 
     current_y = top_margin
-
-    current_y = top_margin
     max_text_width = width - 2 * left_margin
 
     if eyebrow:
@@ -136,7 +134,7 @@ def generate_logo_image(profile_id, site, font, title, subtitle, image_url):
     subtitle_y = int(height * 0.72)
 
     # Draw title with text wrapping
-    title_y = draw_wrapped_text(
+    draw_wrapped_text(
         draw,
         title,
         title_font,
@@ -145,9 +143,9 @@ def generate_logo_image(profile_id, site, font, title, subtitle, image_url):
         text_spacing,
         text_color,
         width,
+        align="center",
         is_title=True,
         height=height,
-        align="center",
     )
 
     # Draw subtitle with text wrapping
