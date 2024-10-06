@@ -88,9 +88,13 @@
             <label for="style" class="block mb-1 text-sm font-medium text-gray-700">Style</label>
             <select id="style" name="style" class="px-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
               {% for value, label in style_choices %}
-                <option value="{{ value }}">{{ label }}</option>
+                {% if value == "base" %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% else %}
+                  <option value="{{ value }}" {% if not user.is_authenticated %}disabled{% endif %}>{{ label }}{% if not user.is_authenticated %} (Sign up to use){% endif %}</option>
+                {% endif %}
               {% endfor %}
-            </select>
+        </select>
           </div>
 
           <div>

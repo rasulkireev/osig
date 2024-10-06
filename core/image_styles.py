@@ -1,10 +1,13 @@
-import io
-import os
+from PIL import Image, ImageDraw
 
-import requests
-from django.conf import settings
-from PIL import Image, ImageDraw, ImageFont
-
+from core.image_utils import (
+    add_watermark,
+    create_image_buffer,
+    draw_wrapped_text,
+    get_image_dimensions,
+    load_and_resize_image,
+    load_font,
+)
 from core.utils import check_if_profile_has_pro_subscription
 from osig.utils import get_osig_logger
 
@@ -21,22 +24,13 @@ def generate_base_image(
     image_url,
 ):
     has_pro_subscription = check_if_profile_has_pro_subscription(profile_id)
-
-    if site.lower() == "facebook":
-        width, height = 1200, 630
-    else:  # default to X (Twitter)
-        width, height = 1600, 900
-
-    width, height = int(width / 2), int(height / 2)
+    width, height = get_image_dimensions(site)
 
     if image_url:
-        response = requests.get(image_url)
-        img = Image.open(io.BytesIO(response.content)).convert("RGB")
-        img = img.resize((width, height), Image.LANCZOS)
+        img = load_and_resize_image(image_url, width, height)
     else:
         img = Image.new("RGB", (width, height), color=(255, 255, 255))
 
-    # Create a dark transparent overlay
     overlay = Image.new("RGBA", (width, height), (0, 0, 0, 180))
     img = img.convert("RGBA")
     img = Image.alpha_composite(img, overlay)
@@ -44,17 +38,10 @@ def generate_base_image(
     draw = ImageDraw.Draw(img)
     text_color = (255, 255, 255)  # Always use white text
 
-    if font:
-        font_path = os.path.join(settings.BASE_DIR, "fonts", f"{font}.ttc")
-        title_font = ImageFont.truetype(font_path, int(height * 0.1))
-        subtitle_font = ImageFont.truetype(font_path, int(height * 0.05))
-        eyebrow_font = ImageFont.truetype(font_path, int(height * 0.03))
-    else:
-        title_font = ImageFont.load_default().font_variant(size=int(height * 0.1))
-        subtitle_font = ImageFont.load_default().font_variant(size=int(height * 0.05))
-        eyebrow_font = ImageFont.load_default().font_variant(size=int(height * 0.03))
+    title_font = load_font(font, int(height * 0.1))
+    subtitle_font = load_font(font, int(height * 0.05))
+    eyebrow_font = load_font(font, int(height * 0.03))
 
-    # Calculate text positions
     left_margin = int(width * 0.05)
     top_margin = int(height * 0.3)
     text_spacing = int(height * 0.02)
@@ -107,27 +94,66 @@ def generate_base_image(
     if not has_pro_subscription:
         add_watermark(img, draw, width, height)
 
-    buffer = io.BytesIO()
-    img = img.convert("RGB")
-    img.save(buffer, format="PNG")
-    buffer.seek(0)
-
-    return buffer
+    return create_image_buffer(img)
 
 
-def add_watermark(img, draw, width, height):
-    watermark_text = "made with osig.app"
-    watermark_font = ImageFont.load_default().font_variant(size=int(height * 0.05))
-    watermark_color = (255, 255, 255, 128)  # White with 50% opacity
+def generate_logo_image(profile_id, site, font, title, subtitle, image_url):
+    has_pro_subscription = check_if_profile_has_pro_subscription(profile_id)
+    width, height = get_image_dimensions(site)
 
-    # Get the size of the watermark text
-    bbox = watermark_font.getbbox(watermark_text)
-    text_width = bbox[2] - bbox[0]
-    text_height = bbox[3] - bbox[1]
+    background_color = (30, 30, 30)  # Almost black
+    img = Image.new("RGB", (width, height), color=background_color)
 
-    # Calculate position (bottom right corner)
-    x = width - text_width - int(width * 0.02)
-    y = height - text_height - int(height * 0.08)
+    draw = ImageDraw.Draw(img)
+    text_color = (255, 255, 255)  # White text
 
-    # Draw the watermark
-    draw.text((x, y), watermark_text, font=watermark_font, fill=watermark_color)
+    title_font = load_font(font, int(height * 0.08))
+    subtitle_font = load_font(font, int(height * 0.05))
+
+    if image_url:
+        logo = load_and_resize_image(image_url, int(height * 0.4), int(height * 0.4))
+        logo = logo.convert("RGBA")
+
+        mask = Image.new("L", logo.size, 0)
+        draw_mask = ImageDraw.Draw(mask)
+        draw_mask.ellipse((0, 0) + logo.size, fill=255)
+
+        logo = Image.composite(logo, Image.new("RGBA", logo.size, (0, 0, 0, 0)), mask)
+
+        logo_x = (width - logo.width) // 2
+        logo_y = int(height * 0.15)
+
+        img.paste(logo, (logo_x, logo_y), logo)
+
+    # Calculate text positions and dimensions
+    left_margin = int(width * 0.05)
+    text_spacing = int(height * 0.02)
+    max_text_width = width - 2 * left_margin
+
+    title_y = int(height * 0.62)
+    subtitle_y = int(height * 0.72)
+
+    # Draw title with text wrapping
+    draw_wrapped_text(
+        draw,
+        title,
+        title_font,
+        max_text_width,
+        title_y,
+        text_spacing,
+        text_color,
+        width,
+        align="center",
+        is_title=True,
+        height=height,
+    )
+
+    # Draw subtitle with text wrapping
+    draw_wrapped_text(
+        draw, subtitle, subtitle_font, max_text_width, subtitle_y, text_spacing, text_color, width, align="center"
+    )
+
+    if not has_pro_subscription:
+        add_watermark(img, draw, width, height)
+
+    return create_image_buffer(img)
