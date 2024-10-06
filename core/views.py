@@ -18,7 +18,7 @@ from djstripe import models as djstripe_models, settings as djstripe_settings
 from PIL import Image
 
 from core.forms import ProfileUpdateForm
-from core.image_styles import generate_base_image
+from core.image_styles import generate_base_image, generate_logo_image
 from core.models import Profile
 from core.tasks import save_generated_image_to_s3
 from core.utils import check_if_profile_has_pro_subscription
@@ -35,7 +35,7 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["site_choices"] = [("x", "X (Twitter)"), ("facebook", "Facebook")]
-        context["style_choices"] = [("base", "Base")]
+        context["style_choices"] = [("base", "Base"), ("logo", "Logo")]
         context["font_choices"] = [("helvetica", "Helvetica"), ("markerfelt", "Marker Felt"), ("papyrus", "Papyrus")]
 
         if self.request.user.is_authenticated:
@@ -203,8 +203,15 @@ def generate_image(request):
         image_url=image_url,
     )
 
-    if style == "cool":
-        logger.info("Printing Cool Image")
+    if style == "logo":
+        image = generate_logo_image(
+            profile_id=profile_id,
+            site=site,
+            font=font,
+            title=title,
+            subtitle=subtitle,
+            image_url=image_url,
+        )
     else:
         image = generate_base_image(
             profile_id=profile_id,
