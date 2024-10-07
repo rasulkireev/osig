@@ -10,8 +10,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -180,66 +179,47 @@ def blank_square_image(request):
 
 @require_GET
 def generate_image(request):
-    key = request.GET.get("key", "")
-    style = request.GET.get("style", "base")
-    site = request.GET.get("site", "x")
-    font = request.GET.get("font")
-    title = request.GET.get("title")
-    subtitle = request.GET.get("subtitle")
-    eyebrow = request.GET.get("eyebrow")
-    image_url = request.GET.get("image_url")
-
-    profile_id = None
-    try:
-        profile_id = Profile.objects.get(key=key).id
-    except Profile.DoesNotExist:
-        logger.error("Profile Does Not Exist")
-
-    if profile_id is None:
-        style = "base"
-        font = "helvetica"
-
-    existing_image = ImageModel.objects.filter(
-        Q(profile_id=profile_id)
-        & Q(key=key)
-        & Q(style=style)
-        & Q(site=site)
-        & Q(font=font)
-        & Q(title=title)
-        & Q(subtitle=subtitle)
-        & Q(eyebrow=eyebrow)
-        & Q(image_url=image_url)
-    ).first()
-
-    image_data = {
-        "profile_id": profile_id,
-        "key": key,
-        "style": style,
-        "site": site,
-        "font": font,
-        "title": title,
-        "subtitle": subtitle,
-        "eyebrow": eyebrow,
-        "image_url": image_url,
+    # Extract query parameters
+    params = {
+        "key": request.GET.get("key", ""),
+        "style": request.GET.get("style", "base"),
+        "site": request.GET.get("site", "x"),
+        "font": request.GET.get("font"),
+        "title": request.GET.get("title"),
+        "subtitle": request.GET.get("subtitle"),
+        "eyebrow": request.GET.get("eyebrow"),
+        "image_url": request.GET.get("image_url"),
     }
+
+    if not all([params["key"], params["title"]]):
+        return HttpResponseBadRequest("Missing required parameters")
+
+    try:
+        profile = Profile.objects.get(key=params["key"])
+        params["profile_id"] = profile.id
+    except Profile.DoesNotExist:
+        logger.warning(f"Profile not found for key: {params['key']}")
+        params["profile_id"] = None
+        params["style"] = "base"
+        params["font"] = "helvetica"
+
+    existing_image = ImageModel.objects.filter(**{k: v for k, v in params.items() if v is not None}).first()
 
     if existing_image and existing_image.generated_image:
         two_days_ago = timezone.now() - timedelta(days=2)
-        should_update = (settings.ENVIRONMENT == "prod" and existing_image.updated_at < two_days_ago) or (
-            settings.ENVIRONMENT == "dev"
-        )
+        should_update = (
+            settings.ENVIRONMENT == "prod" and existing_image.updated_at < two_days_ago
+        ) or settings.ENVIRONMENT == "dev"
 
         if should_update:
-            async_task(regenerate_and_update_image, existing_image.id, image_data)
-        else:
-            logger.info("Using existing image (no update needed)", image_id=existing_image.id)
+            async_task(regenerate_and_update_image, existing_image.id, params)
 
         try:
             return HttpResponse(existing_image.generated_image, content_type="image/png")
         except FileNotFoundError:
-            pass
+            logger.error(f"Generated image file not found for image_id: {existing_image.id}")
 
-    image = generate_image_router(image_data)
-    async_task(save_generated_image, image, image_data)
+    image = generate_image_router(params)
+    async_task(save_generated_image, image, params)
 
     return HttpResponse(image, content_type="image/png")

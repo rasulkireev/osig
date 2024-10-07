@@ -5,6 +5,7 @@ import requests
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.db import transaction
 
 from core.image_styles import generate_image_router
 from core.models import Image
@@ -14,68 +15,61 @@ logger = get_osig_logger(__name__)
 
 
 def save_generated_image(image, image_data):
-    hash_input = "".join(
-        [
-            str(image_data[field])
-            for field in ["profile_id", "key", "style", "site", "font", "title", "subtitle", "eyebrow", "image_url"]
-        ]
-    )
+    hash_fields = ["profile_id", "key", "style", "site", "font", "title", "subtitle", "eyebrow", "image_url"]
+    hash_input = "".join(str(image_data.get(field, "")) for field in hash_fields)
     image_key = hashlib.md5(hash_input.encode()).hexdigest()[:12]
-    prefix = "key_" if image_data["key"] else "no_key_"
+    prefix = "key_" if image_data.get("key") else "no_key_"
     image_key = f"{prefix}{image_key}"
+    image_fields = {field: image_data.get(field) for field in hash_fields}
 
-    logger.info(
-        "Saving image",
-        image_key=image_key,
-        image_data=image_data,
-    )
-
-    # Prepare the data for get_or_create
-    image_fields = {
-        "profile_id": image_data["profile_id"],
-        "key": image_data["key"],
-        "style": image_data["style"],
-        "site": image_data["site"],
-        "font": image_data["font"],
-        "title": image_data["title"],
-        "subtitle": image_data["subtitle"],
-        "eyebrow": image_data["eyebrow"],
-        "image_url": image_data["image_url"],
-    }
-
-    image_obj, created = Image.objects.get_or_create(**image_fields)
-
-    image_filename = f"{image_key}.png"
-    image_content = ContentFile(image.getvalue())
-    image_obj.generated_image.save(image_filename, image_content, save=True)
-
-    action = "Saved new" if created else "Updated existing"
-    return f"{action} image: {image_key}"
-
-
-def regenerate_and_update_image(image_id, image_data):
-    logger.info("Regenerating image", image_data=image_data)
     try:
-        image_obj = Image.objects.get(id=image_id)
-        logger.info("Got the image to update", image_id=image_id)
+        with transaction.atomic():
+            image_obj, created = Image.objects.get_or_create(**image_fields)
+
+            image_filename = f"{image_key}.png"
+            image_content = ContentFile(image.getvalue())
+            image_obj.generated_image.save(image_filename, image_content, save=True)
+
+        action = "Saved new" if created else "Updated existing"
+        logger.info(f"{action} image", extra={"image_key": image_key, "image_id": image_obj.id})
+        return f"{action} image: {image_key}"
+    except Exception as e:
+        logger.error("Error saving image", extra={"error": str(e), "image_data": image_data})
+        raise
+
+
+@transaction.atomic
+def regenerate_and_update_image(image_id, image_data):
+    try:
+        image_obj = Image.objects.select_for_update().get(id=image_id)
 
         new_image = generate_image_router(image_data)
         old_image_path = image_obj.generated_image.name
 
-        prefix = "key_" if image_data["key"] else "no_key_"
+        logger.info("Checking old image", check=default_storage.exists(old_image_path))
+        if not default_storage.exists(old_image_path):
+            return "Old image not found in S3, skipping regeneration"
+
+        prefix = "key_" if image_data.get("key") else "no_key_"
         image_filename = f"{prefix}{uuid.uuid4().hex[:12]}.png"
         image_content = ContentFile(new_image.getvalue())
+
+        for key, value in image_data.items():
+            setattr(image_obj, key, value)
+
         image_obj.generated_image.save(image_filename, image_content, save=True)
 
         if old_image_path:
-            logger.info("Deleting old image", path=old_image_path)
+            logger.info("Deleting old image", extra={"path": old_image_path})
             default_storage.delete(old_image_path)
 
-        logger.info("Regenerated and updated image", image_id=image_id)
+        logger.info("Regenerated and updated image", extra={"image_id": image_id})
+        return image_obj
     except Image.DoesNotExist:
-        logger.error("Image not found for regeneration", image_id=image_id)
+        logger.error("Image not found for regeneration", extra={"image_id": image_id})
     except Exception as e:
-        logger.error("Error regenerating image", image_id=image_id, error=str(e))
+        logger.error("Error regenerating image", extra={"image_id": image_id, "error": str(e)})
+        raise
 
 
 def add_email_to_buttondown(email, tag):

@@ -13,3 +13,6 @@ test-webhook:
 
 stripe-sync:
 	docker compose run --rm backend python ./manage.py djstripe_sync_models
+
+restart-worker:
+	docker compose up -d workers --force-recreate
