@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
@@ -19,7 +20,7 @@ from PIL import Image
 
 from core.forms import ProfileUpdateForm
 from core.image_styles import generate_base_image, generate_logo_image
-from core.models import Profile
+from core.models import Image as ImageModel, Profile
 from core.tasks import save_generated_image
 from core.utils import check_if_profile_has_pro_subscription
 from osig.utils import get_osig_logger
@@ -194,6 +195,23 @@ def generate_image(request):
     if profile_id is None:
         style = "base"
         font = "helvetica"
+
+    existing_image = ImageModel.objects.filter(
+        Q(profile_id=profile_id)
+        & Q(key=key)
+        & Q(style=style)
+        & Q(site=site)
+        & Q(font=font)
+        & Q(title=title)
+        & Q(subtitle=subtitle)
+        & Q(eyebrow=eyebrow)
+        & Q(image_url=image_url)
+    ).first()
+
+    if existing_image and existing_image.generated_image:
+        # If the image exists, redirect to the S3 URL
+        logger.info("Returning existing image", image_id=existing_image.id)
+        return HttpResponse(existing_image.generated_image, content_type="image/png")
 
     logger.info(
         "Generating image",
