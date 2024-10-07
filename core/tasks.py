@@ -46,7 +46,6 @@ def regenerate_and_update_image(image_id, image_data):
         new_image = generate_image_router(image_data)
         old_image_path = image_obj.generated_image.name
 
-        logger.info("Checking old image", check=default_storage.exists(old_image_path))
         if not default_storage.exists(old_image_path):
             return "Old image not found in S3, skipping regeneration"
 
@@ -63,8 +62,7 @@ def regenerate_and_update_image(image_id, image_data):
             logger.info("Deleting old image", extra={"path": old_image_path})
             default_storage.delete(old_image_path)
 
-        logger.info("Regenerated and updated image", extra={"image_id": image_id})
-        return image_obj
+        return "Regenerated and updated image"
     except Image.DoesNotExist:
         logger.error("Image not found for regeneration", extra={"image_id": image_id})
     except Exception as e:
