@@ -63,3 +63,26 @@ class ProfileStateTransition(BaseModel):
     to_state = models.CharField(max_length=255, choices=ProfileStates.choices)
     backup_profile_id = models.IntegerField()
     metadata = models.JSONField(null=True, blank=True)
+
+
+class Sites(models.TextChoices):
+    X = "x"
+    META = "meta"
+
+
+class Image(BaseModel):
+    profile = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL, related_name="images")
+    key = models.CharField(max_length=12, blank=True)
+
+    style = models.CharField(max_length=20, blank=True)
+    site = models.CharField(max_length=20, blank=True, choices=Sites.choices)
+    font = models.CharField(max_length=30, blank=True)
+    title = models.CharField(max_length=255, blank=True)
+    subtitle = models.CharField(max_length=255, blank=True)
+    eyebrow = models.CharField(max_length=255, blank=True)
+    image_url = models.URLField(max_length=255, blank=True)
+
+    generated_image = models.ImageField(upload_to="generated_images/", blank=True)
+
+    class Meta:
+        unique_together = ["key", "style", "site", "font", "title", "subtitle", "eyebrow", "image_url"]

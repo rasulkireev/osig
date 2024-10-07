@@ -6,7 +6,7 @@
 
 ### site
 - x
-- facebook
+- meta
 
 
 ## Stripe

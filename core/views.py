@@ -1,16 +1,19 @@
 import io
+from datetime import timedelta
 from urllib.parse import urlencode
 
 import stripe
 from allauth.account.models import EmailAddress
 from allauth.account.utils import send_email_confirmation
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.views.decorators.http import require_GET
 from django.views.generic import TemplateView, UpdateView
 from django_q.tasks import async_task
@@ -18,9 +21,9 @@ from djstripe import models as djstripe_models, settings as djstripe_settings
 from PIL import Image
 
 from core.forms import ProfileUpdateForm
-from core.image_styles import generate_base_image, generate_logo_image
-from core.models import Profile
-from core.tasks import save_generated_image_to_s3
+from core.image_styles import generate_image_router
+from core.models import Image as ImageModel, Profile
+from core.tasks import regenerate_and_update_image, save_generated_image
 from core.utils import check_if_profile_has_pro_subscription
 from osig.utils import get_osig_logger
 
@@ -34,7 +37,7 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["site_choices"] = [("x", "X (Twitter)"), ("facebook", "Facebook")]
+        context["site_choices"] = [("x", "X (Twitter)"), ("meta", "meta")]
         context["style_choices"] = [("base", "Base"), ("logo", "Logo")]
         context["font_choices"] = [("helvetica", "Helvetica"), ("markerfelt", "Marker Felt"), ("papyrus", "Papyrus")]
 
@@ -176,53 +179,47 @@ def blank_square_image(request):
 
 @require_GET
 def generate_image(request):
-    key = request.GET.get("key", "")
-    style = request.GET.get("style", "base")
-    site = request.GET.get("site", "x")
-    font = request.GET.get("font")
-    title = request.GET.get("title")
-    subtitle = request.GET.get("subtitle")
-    eyebrow = request.GET.get("eyebrow")
-    image_url = request.GET.get("image_url")
+    # Extract query parameters
+    params = {
+        "key": request.GET.get("key", ""),
+        "style": request.GET.get("style", "base"),
+        "site": request.GET.get("site", "x"),
+        "font": request.GET.get("font"),
+        "title": request.GET.get("title"),
+        "subtitle": request.GET.get("subtitle"),
+        "eyebrow": request.GET.get("eyebrow"),
+        "image_url": request.GET.get("image_url"),
+    }
 
-    profile_id = None
-    if not key:
-        style = "base"
-        font = "helvetica"
-    else:
-        profile_id = Profile.objects.get(key=key).id
+    if not all([params["key"], params["title"]]):
+        return HttpResponseBadRequest("Missing required parameters")
 
-    logger.info(
-        "Generating image",
-        profile_id=profile_id,
-        site=site,
-        font=font,
-        title=title,
-        subtitle=subtitle,
-        eyebrow=eyebrow,
-        image_url=image_url,
-    )
+    try:
+        profile = Profile.objects.get(key=params["key"])
+        params["profile_id"] = profile.id
+    except Profile.DoesNotExist:
+        logger.warning(f"Profile not found for key: {params['key']}")
+        params["profile_id"] = None
+        params["style"] = "base"
+        params["font"] = "helvetica"
 
-    if style == "logo":
-        image = generate_logo_image(
-            profile_id=profile_id,
-            site=site,
-            font=font,
-            title=title,
-            subtitle=subtitle,
-            image_url=image_url,
-        )
-    else:
-        image = generate_base_image(
-            profile_id=profile_id,
-            site=site,
-            font=font,
-            title=title,
-            subtitle=subtitle,
-            eyebrow=eyebrow,
-            image_url=image_url,
-        )
+    existing_image = ImageModel.objects.filter(**{k: v for k, v in params.items() if v is not None}).first()
 
-    async_task(save_generated_image_to_s3, image)
+    if existing_image and existing_image.generated_image:
+        two_days_ago = timezone.now() - timedelta(days=2)
+        should_update = (
+            settings.ENVIRONMENT == "prod" and existing_image.updated_at < two_days_ago
+        ) or settings.ENVIRONMENT == "dev"
+
+        if should_update:
+            async_task(regenerate_and_update_image, existing_image.id, params)
+
+        try:
+            return HttpResponse(existing_image.generated_image, content_type="image/png")
+        except FileNotFoundError:
+            logger.error(f"Generated image file not found for image_id: {existing_image.id}")
+
+    image = generate_image_router(params)
+    async_task(save_generated_image, image, params)
 
     return HttpResponse(image, content_type="image/png")
