@@ -1,9 +1,11 @@
 import io
+from datetime import timedelta
 from urllib.parse import urlencode
 
 import stripe
 from allauth.account.models import EmailAddress
 from allauth.account.utils import send_email_confirmation
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -12,6 +14,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.views.decorators.http import require_GET
 from django.views.generic import TemplateView, UpdateView
 from django_q.tasks import async_task
@@ -19,9 +22,9 @@ from djstripe import models as djstripe_models, settings as djstripe_settings
 from PIL import Image
 
 from core.forms import ProfileUpdateForm
-from core.image_styles import generate_base_image, generate_logo_image
+from core.image_styles import generate_image_router
 from core.models import Image as ImageModel, Profile
-from core.tasks import save_generated_image
+from core.tasks import regenerate_and_update_image, save_generated_image
 from core.utils import check_if_profile_has_pro_subscription
 from osig.utils import get_osig_logger
 
@@ -208,42 +211,6 @@ def generate_image(request):
         & Q(image_url=image_url)
     ).first()
 
-    if existing_image and existing_image.generated_image:
-        # If the image exists, redirect to the S3 URL
-        logger.info("Returning existing image", image_id=existing_image.id)
-        return HttpResponse(existing_image.generated_image, content_type="image/png")
-
-    logger.info(
-        "Generating image",
-        profile_id=profile_id,
-        site=site,
-        font=font,
-        title=title,
-        subtitle=subtitle,
-        eyebrow=eyebrow,
-        image_url=image_url,
-    )
-
-    if style == "logo":
-        image = generate_logo_image(
-            profile_id=profile_id,
-            site=site,
-            font=font,
-            title=title,
-            subtitle=subtitle,
-            image_url=image_url,
-        )
-    else:
-        image = generate_base_image(
-            profile_id=profile_id,
-            site=site,
-            font=font,
-            title=title,
-            subtitle=subtitle,
-            eyebrow=eyebrow,
-            image_url=image_url,
-        )
-
     image_data = {
         "profile_id": profile_id,
         "key": key,
@@ -256,6 +223,23 @@ def generate_image(request):
         "image_url": image_url,
     }
 
+    if existing_image and existing_image.generated_image:
+        two_days_ago = timezone.now() - timedelta(days=2)
+        should_update = (settings.ENVIRONMENT == "prod" and existing_image.updated_at < two_days_ago) or (
+            settings.ENVIRONMENT == "dev"
+        )
+
+        if should_update:
+            async_task(regenerate_and_update_image, existing_image.id, image_data)
+        else:
+            logger.info("Using existing image (no update needed)", image_id=existing_image.id)
+
+        try:
+            return HttpResponse(existing_image.generated_image, content_type="image/png")
+        except FileNotFoundError:
+            pass
+
+    image = generate_image_router(image_data)
     async_task(save_generated_image, image, image_data)
 
     return HttpResponse(image, content_type="image/png")

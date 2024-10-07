@@ -14,6 +14,30 @@ from osig.utils import get_osig_logger
 logger = get_osig_logger(__name__)
 
 
+def generate_image_router(image_data):
+    style = image_data.get("style", "base")
+
+    if style == "logo":
+        return generate_logo_image(
+            profile_id=image_data.get("profile_id"),
+            site=image_data.get("site"),
+            font=image_data.get("font"),
+            title=image_data.get("title"),
+            subtitle=image_data.get("subtitle"),
+            image_url=image_data.get("image_url"),
+        )
+    else:
+        return generate_base_image(
+            profile_id=image_data.get("profile_id"),
+            site=image_data.get("site"),
+            font=image_data.get("font"),
+            title=image_data.get("title"),
+            subtitle=image_data.get("subtitle"),
+            eyebrow=image_data.get("eyebrow"),
+            image_url=image_data.get("image_url"),
+        )
+
+
 def generate_base_image(
     profile_id,
     site,
@@ -23,6 +47,16 @@ def generate_base_image(
     eyebrow,
     image_url,
 ):
+    logger.info(
+        "Generating base OG image",
+        profile_id=profile_id,
+        site=site,
+        font=font,
+        title=title,
+        subtitle=subtitle,
+        eyebrow=eyebrow,
+        image_url=image_url,
+    )
     has_pro_subscription = check_if_profile_has_pro_subscription(profile_id)
     width, height = get_image_dimensions(site)
 
@@ -98,6 +132,15 @@ def generate_base_image(
 
 
 def generate_logo_image(profile_id, site, font, title, subtitle, image_url):
+    logger.info(
+        "Generating logo OG image",
+        profile_id=profile_id,
+        site=site,
+        font=font,
+        title=title,
+        subtitle=subtitle,
+        image_url=image_url,
+    )
     has_pro_subscription = check_if_profile_has_pro_subscription(profile_id)
     width, height = get_image_dimensions(site)
 

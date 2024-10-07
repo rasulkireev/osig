@@ -83,3 +83,6 @@ class Image(BaseModel):
     image_url = models.URLField(max_length=255, blank=True)
 
     generated_image = models.ImageField(upload_to="generated_images/", blank=True)
+
+    class Meta:
+        unique_together = ["key", "style", "site", "font", "title", "subtitle", "eyebrow", "image_url"]
