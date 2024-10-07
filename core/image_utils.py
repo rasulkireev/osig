@@ -5,9 +5,13 @@ import requests
 from django.conf import settings
 from PIL import Image, ImageFont
 
+from osig.utils import get_osig_logger
+
+logger = get_osig_logger(__name__)
+
 
 def get_image_dimensions(site):
-    if site.lower() == "facebook":
+    if site.lower() == "meta":
         width, height = 1200, 630
     else:  # default to X (Twitter)
         width, height = 1600, 900
@@ -70,10 +74,11 @@ def draw_wrapped_text(
 
 
 def load_font(font, size):
-    if font:
+    try:
         font_path = os.path.join(settings.BASE_DIR, "fonts", f"{font}.ttc")
         return ImageFont.truetype(font_path, size)
-    else:
+    except Exception as e:
+        logger.error("Error loading font", font=font, error=str(e))
         return ImageFont.load_default().font_variant(size=size)
 
 
