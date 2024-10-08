@@ -5,6 +5,7 @@ from core import views
 urlpatterns = [
     path("", views.HomeView.as_view(), name="home"),
     path("settings", views.UserSettingsView.as_view(), name="settings"),
+    path("how-to", views.HowToView.as_view(), name="how_to"),
     path("pricing", views.PricingView.as_view(), name="pricing"),
     path("resend-confirmation", views.resend_confirmation_email, name="resend_confirmation"),
     path("create-customer-portal", views.create_customer_portal_session, name="create_customer_portal_session"),

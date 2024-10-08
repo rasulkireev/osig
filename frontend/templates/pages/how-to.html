@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% load webpack_loader static %}
+
+{% block extra_top_js %}
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
+{% endblock extra_top_js %}
+
+{% block content %}
+<div class="container px-4 py-8 mx-auto md:relative">
+  <div class="mx-auto max-w-3xl">
+    <h1 class="mb-8 text-3xl font-bold text-center">OG Image Generator
+    <span class="block text-blue-600">Documentation</span>
+    </h1>
+
+    <div class="mt-10">
+      <h2 class="pb-2 my-4 text-3xl font-semibold border-b border-gray-200">Overview</h2>
+      <p class="mb-4">The OG Image Generator allows you to create custom Open Graph images for your website. You can specify various parameters to customize the image according to your needs.</p>
+    </div>
+
+    <div class="mt-10">
+      <h2 class="pb-2 my-4 text-3xl font-semibold border-b border-gray-200">URL</h2>
+      <p class="mb-4">The url for all images will be the same:</p>
+      <code class="block p-4 bg-gray-100 rounded-md">
+        https://osig.app/g/
+      </code>
+    </div>
+
+    <div class="mt-10">
+      <h2 class="pb-2 my-4 text-3xl font-semibold border-b border-gray-200">Parameters</h2>
+      <p class="mb-4">Parameters will vary depending on the style. All of them are optional, but if you don't pass anything it will look like sh*t.</p>
+
+      <img
+        src="{% static 'vendors/images/no-params-example.png' %}"
+        class="mb-4 rounded-md"
+        alt="OG Image Generator Parameters"
+      />
+
+      <p class="mb-4">Below is a list of all parameters we currently support:</p>
+
+      <ul class="space-y-2 list-disc list-inside">
+        <li><strong>key</strong>: Your API key. Can be found in your <a href="{% url 'settings' %}" class="text-blue-500 underline">settings</a> page, if you are registered.</li>
+        <li>
+          <strong>style</strong>: Image style (default: "base")
+          <ul class="mt-2 ml-6 space-y-1">
+            <li>- <a class="link" href="#base">base</a></li>
+            <li>- <a class="link" href="#logo">logo</a></li>
+          </ul>
+        </li>
+        <li>
+          <strong>site</strong>: This dictates the size of the image (default: "x")
+          <ul class="mt-2 ml-6 space-y-1">
+            <li>- x (1600 by 900)</li>
+            <li>- meta (1200 by 630)</li>
+          </ul>
+        </li>
+        <li>
+          <strong>font</strong>: Font to use for text (more will be added)
+          <ul class="mt-2 ml-6 space-y-1">
+            <li>- <a class="link" href="#Helvetica">helvetica</a></li>
+            <li>- <a class="link" href="#Markerfelt">markerfelt</a></li>
+            <li>- <a class="link" href="#Papyrus">papyrus</a></li>
+          </ul>
+        </li>
+        <li><strong>title</strong>: Main title text</li>
+        <li><strong>subtitle</strong>: Subtitle text</li>
+        <li><strong>eyebrow</strong>: Eyebrow text</li>
+        <li><strong>image_url</strong>: URL of the background image</li>
+      </ul>
+    </div>
+
+    <div class="mt-10">
+      <h2 class="pb-2 my-4 text-3xl font-semibold border-b border-gray-200">Usage</h2>
+      <p class="mb-4">The url for all images will be the same:</p>
+      <pre><code class="block p-4 bg-gray-100 rounded-md">&lt;meta name="twitter:card" content="summary_large_image" /&gt;
+&lt;meta name="twitter:image" content="{ generated_image_url }"/&gt;</code></pre>
+    </div>
+
+    <div class="mt-10">
+      <h2 class="pb-2 my-4 text-3xl font-semibold border-b border-gray-200">Examples</h2>
+
+      <h3 id="base" class="pb-2 text-2xl font-semibold">Base Style</h3>
+      <p class="mb-4">This is useful for general pages like Articles, Tutorial, News pages. Pro tip, you can generate the background image using AI. Those work super well.</p>
+      <p class="mb-4">Here is what gets generated for my site's articles:</p>
+      <img
+      src="{% static 'vendors/images/base-example.png' %}"
+      class="mb-4 rounded-md"
+      alt="Base OG Image Example"
+      />
+
+      <p class="mb-4">This is the that I use to generate the image:</p>
+      <pre class="block overflow-x-auto p-4 bg-gray-100 rounded-md"><code>https://osig.app/g?
+  site=x
+  &style=base
+  &font=helvetica
+  &title=10 Years of Great Books
+  &subtitle=I'm starting a 10 Year Reading Plan proposed in the 1st Volume (The Great Conversation) of the "Great Books of the Western World" series.
+  &eyebrow=Article
+  &image_url=https://www.rasulkireev.com/_astro/a_smiling_boy_from_Pixars_Coco.DrP3G0Ol.png</code></pre>
+
+      <h3 id="logo" class="pb-2 mt-6 text-2xl font-semibold">Logo Style</h3>
+      <p class="mb-4">Logo style is super useful if you are trying to highlight a company or a project, advertize job postings or anything like. Super minimalistic.</p>
+      <p class="mb-4">Here is how I use it for one of my job boards:</p>
+      <img
+        src="{% static 'vendors/images/logo-example.png' %}"
+        class="mb-4 rounded-md"
+        alt="Logo OG Image Example"
+      />
+
+      <p class="mb-4">This is the that I use to generate the image:</p>
+      <pre class="block overflow-x-auto p-4 bg-gray-100 rounded-md"><code>https://osig.app/g?
+  site=x
+  &style=logo
+  &font=markerfelt
+  &title=Narrative
+  &subtitle=Founding Senior Software Engineer
+  &image_url=http://res.cloudinary.com/built-with-django/image/upload/v1728024021/user-profile-image-prod/hhxfplsthiaytuttoamc.jpg</code></pre>
+    </div>
+
+    <div class="mt-10">
+      <h2 class="pb-2 my-4 text-3xl font-semibold border-b border-gray-200">Fonts</h2>
+      <ul class="space-y-2 list-disc list-inside">
+        <li id="Helvetica">
+          Helvetica
+          <img
+            src="{% static 'vendors/images/helvetica-example.png' %}"
+            class="mb-4 rounded-md"
+            alt="Helvetica Font Example"
+          />
+        </li>
+        <li id="Markerfelt">
+          Markerfelt
+          <img
+            src="{% static 'vendors/images/markerfelt-example.png' %}"
+            class="mb-4 rounded-md"
+            alt="Markerfelt Font Example"
+          />
+        </li>
+        <li id="Papyrus">
+          Papyrus
+          <img
+            src="{% static 'vendors/images/papyrus-example.png' %}"
+            class="mb-4 rounded-md"
+            alt="Papyrus Font Example"
+          />
+        </li>
+      </ul>
+    </div>
+
+    <div class="mt-10">
+      <h2 class="pb-2 my-4 text-3xl font-semibold border-b border-gray-200">Precautions</h2>
+      <p>Once you insert this link on your site, make sure to test it before sharing links online. I like to use <a class="link" href="https://threadcreator.com/tools/twitter-card-validator">this Twitter Card Validator</a></p>
+    </div>
+
+    <div class="mt-10">
+      <h2 class="pb-2 my-4 text-3xl font-semibold border-b border-gray-200">Notes</h2>
+      <ul class="space-y-2 list-disc list-inside">
+        <li>Subtitle text is truncated to 150 characters if longer.</li>
+        <li>You can remove the watermark by subscribing to the <a class="link" href="{% url 'pricing' %}">PRO version</a>.</li>
+      </ul>
+    </div>
+
+    <div class="mt-10">
+      <h2 class="pb-2 my-4 text-3xl font-semibold border-b border-gray-200">Integrating into your Site</h2>
+      <p>As people use this, I will start adding more specific instructions on how to add these to your specific site that might use different technologies:</p>
+      <ul class="mt-4 space-y-2 list-disc list-inside">
+        <li>Wordpress</li>
+        <li>Django</li>
+        <li>Astro</li>
+        <li>Ruby on Rails</li>
+        <li>Next.js</li>
+        <li>etc.</li>
+      </ul>
+    </div>
+
+    <div class="mt-10">
+      <h2 class="pb-2 my-4 text-3xl font-semibold border-b border-gray-200">API</h2>
+      <p>I will be adding more instruction on how you can generate those images programmatically via an API soon.</p>
+    </div>
+
+  </div>
+</div>
+{% endblock content %}

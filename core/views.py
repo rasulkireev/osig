@@ -10,7 +10,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -76,6 +77,10 @@ class PricingView(TemplateView):
             context["has_pro_subscription"] = False
 
         return context
+
+
+class HowToView(TemplateView):
+    template_name = "pages/how-to.html"
 
 
 class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
@@ -179,7 +184,6 @@ def blank_square_image(request):
 
 @require_GET
 def generate_image(request):
-    # Extract query parameters
     params = {
         "key": request.GET.get("key", ""),
         "style": request.GET.get("style", "base"),
@@ -191,20 +195,14 @@ def generate_image(request):
         "image_url": request.GET.get("image_url"),
     }
 
-    if not all([params["key"], params["title"]]):
-        return HttpResponseBadRequest("Missing required parameters")
+    query = Q()
+    for key, value in params.items():
+        if value:
+            query &= Q(**{key: value})
+        else:
+            query &= Q(**{key: ""}) | Q(**{f"{key}__isnull": True})
 
-    try:
-        profile = Profile.objects.get(key=params["key"])
-        params["profile_id"] = profile.id
-    except Profile.DoesNotExist:
-        logger.warning(f"Profile not found for key: {params['key']}")
-        params["profile_id"] = None
-        params["style"] = "base"
-        params["font"] = "helvetica"
-
-    existing_image = ImageModel.objects.filter(**{k: v for k, v in params.items() if v is not None}).first()
-
+    existing_image = ImageModel.objects.filter(query).first()
     if existing_image and existing_image.generated_image:
         two_days_ago = timezone.now() - timedelta(days=2)
         should_update = (

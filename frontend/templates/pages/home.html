@@ -6,10 +6,10 @@
 {% endblock extra_top_js %}
 
 {% block content %}
-<div class="container px-4 py-8 mx-auto md:md:relative">
+<div class="container px-4 py-8 mx-auto md:relative">
   <div class="mx-auto max-w-3xl">
     <h1 class="mb-8 text-3xl font-bold text-center">Generate Beautiful OG Images for
-      <span class="block text-blue-600">Your Site</span>
+      <span class="block text-blue-600">Your Site... For Free!</span>
     </h1>
     <div class="flex flex-col gap-x-6 justify-center items-center mt-10 md:flex-row md:items-end">
       <a
@@ -27,25 +27,30 @@
       data-image-generator-user-key-value="{{ user_key|default:'' }}"
     >
       <div class="w-full md:relative md:w-1/2">
-        {% if not user.is_authenticated %}
-        <div class="absolute -left-48 top-[22rem] transform -rotate-6 w-44 hidden md:block">
-          <p class="text-lg font-bold leading-tight text-blue-600" style="font-family: 'Kalam', cursive;">
-            <a href="{% url 'account_signup' %}" class="underline">SIGN UP</a> TO USE ANY FONT AND STYLE
-          </p>
-          <svg class="overflow-visible mt-2 w-32 h-32 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <g transform="translate(8, 0)">
-              <path d="M3 3C3 14 10 21 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-              <path d="M21 21L17.5 18.5M21 21L18.5 22.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-            </g>
-          </svg>
-        </div>
-        {% endif %}
         <form data-action="submit->image-generator#generate" class="space-y-4">
           {% csrf_token %}
           <div>
             <label for="site" class="block mb-1 text-sm font-medium text-gray-700">Size</label>
             <select id="site" name="site" class="px-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
               {% for value, label in site_choices %}
+                <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="md:relative">
+            <label for="style" class="block mb-1 text-sm font-medium text-gray-700">Style</label>
+            <select id="style" name="style" class="px-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              {% for value, label in style_choices %}
+                <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="md:relative">
+            <label for="font" class="block mb-1 text-sm font-medium text-gray-700">Font</label>
+            <select id="font" name="font" class="px-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              {% for value, label in font_choices %}
                 <option value="{{ value }}">{{ label }}</option>
               {% endfor %}
             </select>
@@ -71,32 +76,6 @@
             <input type="url" id="image_url" name="image_url" class="px-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
           </div>
 
-          <div class="md:relative">
-            <label for="font" class="block mb-1 text-sm font-medium text-gray-700">Font</label>
-            <select id="font" name="font" class="px-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-              {% for value, label in font_choices %}
-                {% if value == "helvetica" %}
-                  <option value="{{ value }}">{{ label }}</option>
-                {% else %}
-                  <option value="{{ value }}" {% if not user.is_authenticated %}disabled{% endif %}>{{ label }}{% if not user.is_authenticated %} (Sign up to use){% endif %}</option>
-                {% endif %}
-              {% endfor %}
-            </select>
-          </div>
-
-          <div class="md:relative">
-            <label for="style" class="block mb-1 text-sm font-medium text-gray-700">Style</label>
-            <select id="style" name="style" class="px-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-              {% for value, label in style_choices %}
-                {% if value == "base" %}
-                  <option value="{{ value }}">{{ label }}</option>
-                {% else %}
-                  <option value="{{ value }}" {% if not user.is_authenticated %}disabled{% endif %}>{{ label }}{% if not user.is_authenticated %} (Sign up to use){% endif %}</option>
-                {% endif %}
-              {% endfor %}
-        </select>
-          </div>
-
           <div>
             <button type="submit" class="px-4 py-2 w-full text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               Generate Image
@@ -110,7 +89,7 @@
           <p class="text-gray-500">Generated image will appear here</p>
         </div>
         <div class="mt-4">
-          <label for="generate-link" class="block mb-1 text-sm font-medium text-gray-700">Generate Link</label>
+          <label for="generate-link" class="block mb-1 text-sm font-medium text-gray-700">Generated Link</label>
           <div class="flex flex-col">
             <textarea id="generate-link" data-image-generator-target="generateLink" readonly class="px-3 py-2 mb-5 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" rows="11"></textarea>
             <button type="button" data-image-generator-target="copyButton" data-action="click->image-generator#copyGenerateLink" class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
