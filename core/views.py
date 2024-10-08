@@ -195,6 +195,13 @@ def generate_image(request):
         "image_url": request.GET.get("image_url"),
     }
 
+    if params["key"]:
+        try:
+            profile = Profile.objects.get(key=params["key"])
+            params["profile_id"] = profile.id
+        except Profile.DoesNotExist:
+            logger.error("Profile not found for key", key=params["key"])
+
     query = Q()
     for key, value in params.items():
         if value:
