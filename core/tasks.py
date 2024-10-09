@@ -1,4 +1,3 @@
-import hashlib
 import uuid
 
 import requests
@@ -15,24 +14,18 @@ logger = get_osig_logger(__name__)
 
 
 def save_generated_image(image, image_data):
-    hash_fields = ["profile_id", "key", "style", "site", "font", "title", "subtitle", "eyebrow", "image_url"]
-    hash_input = "".join(str(image_data.get(field, "")) for field in hash_fields)
-    image_key = hashlib.md5(hash_input.encode()).hexdigest()[:12]
     prefix = "key_" if image_data.get("key") else "no_key_"
-    image_key = f"{prefix}{image_key}"
-    image_fields = {field: image_data.get(field) for field in hash_fields}
+    image_filename = f"{prefix}{uuid.uuid4().hex[:12]}.png"
 
     try:
         with transaction.atomic():
-            image_obj, created = Image.objects.get_or_create(**image_fields)
+            image_obj, created = Image.objects.get_or_create(image_data=image_data)
 
-            image_filename = f"{image_key}.png"
             image_content = ContentFile(image.getvalue())
             image_obj.generated_image.save(image_filename, image_content, save=True)
 
         action = "Saved new" if created else "Updated existing"
-        logger.info(f"{action} image", extra={"image_key": image_key, "image_id": image_obj.id})
-        return f"{action} image: {image_key}"
+        return f"{action} image: {image_filename}"
     except Exception as e:
         logger.error("Error saving image", extra={"error": str(e), "image_data": image_data})
         raise
