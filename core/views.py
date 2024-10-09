@@ -10,7 +10,6 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
@@ -202,14 +201,7 @@ def generate_image(request):
         except Profile.DoesNotExist:
             logger.error("Profile not found for key", key=params["key"])
 
-    query = Q()
-    for key, value in params.items():
-        if value:
-            query &= Q(**{key: value})
-        else:
-            query &= Q(**{key: ""}) | Q(**{f"{key}__isnull": True})
-
-    existing_image = ImageModel.objects.filter(query).first()
+    existing_image = ImageModel.objects.filter(image_data=params).first()
     if existing_image and existing_image.generated_image:
         two_days_ago = timezone.now() - timedelta(days=2)
         should_update = (
