@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.urls import reverse
 
 from core.base_models import BaseModel
 from core.model_utils import generate_random_key
@@ -73,7 +74,21 @@ class Sites(models.TextChoices):
 class Image(BaseModel):
     profile = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL, related_name="images")
     key = models.CharField(max_length=12, blank=True)
-
     image_data = models.JSONField(null=True, blank=True, default=dict)
-
     generated_image = models.ImageField(upload_to="generated_images/", blank=True)
+
+
+class BlogPost(BaseModel):
+    title = models.CharField(max_length=250)
+    description = models.TextField(blank=True)
+    slug = models.SlugField(max_length=250)
+    tags = models.TextField()
+    content = models.TextField()
+    icon = models.ImageField(upload_to="blog_post_icons/", blank=True)
+    image = models.ImageField(upload_to="blog_post_images/", blank=True)
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        return reverse("blog_post", kwargs={"slug": self.slug})
