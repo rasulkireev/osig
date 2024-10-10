@@ -15,14 +15,14 @@ from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.decorators.http import require_GET
-from django.views.generic import TemplateView, UpdateView
+from django.views.generic import DetailView, ListView, TemplateView, UpdateView
 from django_q.tasks import async_task
 from djstripe import models as djstripe_models, settings as djstripe_settings
 from PIL import Image
 
 from core.forms import ProfileUpdateForm
 from core.image_styles import generate_image_router
-from core.models import Image as ImageModel, Profile
+from core.models import BlogPost, Image as ImageModel, Profile
 from core.tasks import regenerate_and_update_image, save_generated_image
 from core.utils import check_if_profile_has_pro_subscription
 from osig.utils import get_osig_logger
@@ -80,6 +80,18 @@ class PricingView(TemplateView):
 
 class HowToView(TemplateView):
     template_name = "pages/how-to.html"
+
+
+class BlogView(ListView):
+    model = BlogPost
+    template_name = "blog/blog_posts.html"
+    context_object_name = "blog_posts"
+
+
+class BlogPostView(DetailView):
+    model = BlogPost
+    template_name = "blog/blog_post.html"
+    context_object_name = "blog_post"
 
 
 class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):

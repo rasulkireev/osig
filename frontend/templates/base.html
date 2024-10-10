@@ -16,24 +16,24 @@
 
   {% block meta %}
   <title>OSIG</title>
-  <meta name="description" content="Open Source Social Image Generator" />
-  <meta name="keywords" content="django" />
+  <meta name="description" content="Generate Beautiful OG Images for Your Site... For Free!" />
+  <meta name="keywords" content="og image, og image creator, og image maker, og image template, og image generator, og image creator, og image maker, og image template, og image template, og image generator, og image creator, og image maker, og image template" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://{{ request.get_host }}/" />
 
   <meta property="og:type" content="website" />
   <meta property="og:title" content="OSIG" />
   <meta property="og:url" content="https://{{ request.get_host }}/" />
-  <meta property="og:description" content="Open Source Social Image Generator" />
-  <meta property="og:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+  <meta property="og:description" content="Generate Beautiful OG Images for Your Site... For Free!" />
+  <meta property="og:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=OSIG&subtitle=Generate Beautiful OG Images for Your Site... For Free!&image_url=https://osig.app/static/vendors/images/logo-square.png" />
   <meta property="og:locale" content="en_US" />
 
-  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:creator" content="@rasulkireev" />
   <meta name="twitter:site" content="@rasulkireev" />
   <meta name="twitter:title" content="OSIG" />
-  <meta name="twitter:description" content="Open Source Social Image Generator" />
-  <meta name="twitter:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+  <meta name="twitter:description" content="Generate Beautiful OG Images for Your Site... For Free!" />
+  <meta name="twitter:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=OSIG&subtitle=Generate Beautiful OG Images for Your Site... For Free!&image_url=https://osig.app/static/vendors/images/logo-square.png" />
   {% endblock meta %}
 
   {% stylesheet_pack 'index' %}
@@ -97,6 +97,9 @@
                       </a>
                       <a href="{% url 'how_to' %}" class="px-3 py-2.5 -mx-3 text-base font-semibold leading-7 text-center text-gray-900 rounded-lg hover:bg-gray-50">
                         How to use?
+                      </a>
+                      <a href="{% url 'blog_posts' %}" class="px-3 py-2.5 -mx-3 text-base font-semibold leading-7 text-center text-gray-900 rounded-lg hover:bg-gray-50">
+                        Blog
                       </a>
                       <a href="{% url 'pricing' %}" class="px-3 py-2.5 -mx-3 text-base font-semibold leading-7 text-center text-gray-900 rounded-lg hover:bg-gray-50">
                         Pricing
@@ -181,6 +184,9 @@
             <a href="{% url 'how_to' %}" class="text-base font-semibold leading-6 text-gray-900 hover:text-gray-700">
               How to use?
             </a>
+            <a href="{% url 'blog_posts' %}" class="text-base font-semibold leading-6 text-gray-900 hover:text-gray-700">
+              Blog
+            </a>
             <a href="{% url 'pricing' %}" class="text-base font-semibold leading-6 text-gray-900 hover:text-gray-700">
               Pricing
             </a>
@@ -235,7 +241,7 @@
 
     <footer class="bg-white">
       <a class="fixed bottom-0 left-0 z-10 px-2 py-1 font-semibold text-gray-900 no-underline bg-gray-200 rounded-tr border-t border-l border-white border-solid"
-      href="https://rasulkireev.com"
+      href="https://rasulkireev.com?ref=osig.app"
       target="_blank">
           <!-- <img class="inline w-4 align-middle rounded" src="https://github.com/account" alt="Rasul Kireev"/> -->
           <p class="inline m-0 ml-1 text-sm font-normal align-middle">by Rasul</p>
@@ -243,7 +249,7 @@
       <div class="px-6 py-12 mx-auto max-w-7xl md:flex md:items-center md:justify-between lg:px-8">
         <div class="mt-8 md:mt-0">
           <p class="text-xs leading-5 text-center text-gray-500">
-            &copy; 2024 LVTD, LLC. All rights reserved.
+            &copy; 2024 <a href="https://lvtd.dev?ref=osig.app">LVTD, LLC</a>. All rights reserved.
           </p>
         </div>
       </div>
@@ -257,8 +263,8 @@
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "OSIG",
-      "description": "Open Source Social Image Generator",
-      "thumbnailUrl": "https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
+      "description": "Generate Beautiful OG Images for Your Site... For Free!",
+      "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=OSIG&subtitle=Generate Beautiful OG Images for Your Site... For Free!&image_url=https://osig.app/static/vendors/images/logo-square.png"",
       "url": "https://{{ request.get_host }}/",
       "author": {
         "@type": "Person",

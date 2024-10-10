@@ -1,16 +1,16 @@
 # OG Image Generator Documentation
 
-## Overview
+## How to use?
 
 The OG Image Generator allows you to create custom Open Graph images for your website. You can specify various parameters to customize the image according to your needs.
 
-## URL
+### URL
 
 The url for all images will be the same:
 
 `https://osig.app/g/`
 
-## Parameters
+### Parameters
 
 Parameters will vary depending on the style. All of them are optional, but if you don't pass anything it will look like sh\*t.
 
@@ -34,7 +34,7 @@ Below is a list of all parameters we currently support:
 *   **eyebrow**: Eyebrow text
 *   **image\_url**: URL of the background image
 
-## Usage
+### Usage
 
 The url for all images will be the same:
 
@@ -43,9 +43,9 @@ The url for all images will be the same:
 <meta name="twitter:image" content="{ generated_image_url }"/>
 ```
 
-## Examples
+### Examples
 
-### Base Style
+#### Base Style
 
 This is useful for general pages like Articles, Tutorial, News pages. Pro tip, you can generate the background image using AI. Those work super well.
 
@@ -66,7 +66,7 @@ https://osig.app/g?
   &image_url=https://www.rasulkireev.com/_astro/a_smiling_boy_from_Pixars_Coco.DrP3G0Ol.png
 ```
 
-### Logo Style
+#### Logo Style
 
 Logo style is super useful if you are trying to highlight a company or a project, advertize job postings or anything like. Super minimalistic.
 
@@ -86,22 +86,22 @@ https://osig.app/g?
   &image_url=http://res.cloudinary.com/built-with-django/image/upload/v1728024021/user-profile-image-prod/hhxfplsthiaytuttoamc.jpg
 ```
 
-## Fonts
+### Fonts
 
 *   Helvetica ![Helvetica Font Example](https://osig.app/static/vendors/images/helvetica-example.9d748f0e4cd3.png)
 *   Markerfelt ![Markerfelt Font Example](https://osig.app/static/vendors/images/markerfelt-example.f0edc54d9ba4.png)
 *   Papyrus ![Papyrus Font Example](https://osig.app/static/vendors/images/papyrus-example.03867e8bc712.png)
 
-## Precautions
+### Precautions
 
 Once you insert this link on your site, make sure to test it before sharing links online. I like to use [this Twitter Card Validator](https://threadcreator.com/tools/twitter-card-validator)
 
-## Notes
+### Notes
 
 *   Subtitle text is truncated to 150 characters if longer.
 *   You can remove the watermark by subscribing to the [PRO version](/pricing).
 
-## Integrating into your Site
+### Integrating into your Site
 
 As people use this, I will start adding more specific instructions on how to add these to your specific site that might use different technologies:
 
@@ -112,6 +112,14 @@ As people use this, I will start adding more specific instructions on how to add
 *   Next.js
 *   etc.
 
-## API
+### API
 
 I will be adding more instruction on how you can generate those images programmatically via an API soon.
+
+
+## Roadmap
+
+- Add instruction on how to self host.
+- Add more styles.
+- Add more fonts.
+- Add more sites.
