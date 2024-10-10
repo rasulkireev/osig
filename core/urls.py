@@ -8,7 +8,7 @@ urlpatterns = [
     path("settings", views.UserSettingsView.as_view(), name="settings"),
     path("how-to", views.HowToView.as_view(), name="how_to"),
     # blog
-    path("blog", views.BlogView.as_view(), name="blog_posts"),
+    path("blog/", views.BlogView.as_view(), name="blog_posts"),
     path("blog/<slug:slug>", views.BlogPostView.as_view(), name="blog_post"),
     # utils
     path("resend-confirmation", views.resend_confirmation_email, name="resend_confirmation"),
