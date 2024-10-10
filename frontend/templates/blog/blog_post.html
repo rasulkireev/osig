@@ -43,7 +43,7 @@
     "@type": "BlogPosting",
     "headline": "{{ blog_post.title }}",
     "description": "{{ blog_post.description }}",
-    "image": "https://osig.app/g?site=x&style=base&font=markerfelt&title={{ blog_post.title }} | OSIG Blog&subtitle={{ blog_post.description }}&image_url=https://{{ request.get_host }}{{ blog_post.image.url }}",
+    "image": "https://osig.app/g?site=x&style=base&font=markerfelt&title={{ blog_post.title }} | OSIG Blog&subtitle={{ blog_post.description }}&image_url={{ blog_post.image.url }}",
     "url": "https://{{ request.get_host }}{{ blog_post.get_absolute_url }}",
     "datePublished": "{{ blog_post.created_at|date:'c' }}",
     "dateModified": "{{ blog_post.updated_at|date:'c' }}",
