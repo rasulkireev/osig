@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load webpack_loader static %}
+
+{% block meta %}
+    <title>Technologies We Use | OSIG</title>
+    <meta name="description" content="Technologies and Tools Used by OSIG" />
+    <meta name="keywords" content="OSIG, Technology Stack, Web Development" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://{{ request.get_host }}/uses" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Technologies We Use | OSIG" />
+    <meta property="og:url" content="https://{{ request.get_host }}/uses" />
+    <meta property="og:description" content="Technologies and Tools Used by OSIG" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:image" content="https://osig.app/g?site=meta&style=logo&font=markerfelt&title=OSIG&subtitle=Tech we use&image_url=https://osig.app/g?site=x&style=logo&font=markerfelt&title=OSIG&subtitle=Tech we use!&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:creator" content="@rasulkireev" />
+    <meta name="twitter:site" content="@rasulkireev" />
+    <meta name="twitter:title" content="Technologies We Use | OSIG" />
+    <meta name="twitter:description" content="Technologies and Tools Used by OSIG" />
+    <meta name="twitter:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=OSIG&subtitle=Tech we use&image_url=https://osig.app/g?site=x&style=logo&font=markerfelt&title=OSIG&subtitle=Tech we use!&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+{% endblock meta %}
+
+{% block content %}
+    <div class="container px-4 py-8 mx-auto prose">
+        <h1>Tech I Use</h1>
+        <p>
+          I run
+          <a href="https://www.rasulkireev.com/projects">multiple projects</a>
+          at the same time and using reliable and simple tech is the key to running everything smoothly. Here's what I use:
+        </p>
+        <ul>
+            <li><strong><a href="https://osig.app/" target="_blank">OSIG</a>:</strong> For pretty OG images.</li>
+            <li><strong><a href="https://statushen/com/" target="_blank">Statushen</a>:</strong> For a Status Page.</li>
+            <li><strong><a href="https://sentry.io/" target="_blank">Sentry</a>:</strong> For error tracking and performance monitoring, ensuring a smooth user experience.</li>
+            <li><strong><a href="https://hetzner.cloud/?ref=Ju1ttKSG0Fn7" target="_blank">Hetzner</a>:</strong> Our cloud infrastructure provider, hosting our servers and services.</li>
+            <li><strong><a href="https://buttondown.email/refer/rasulkireev" target="_blank">Buttondown</a>:</strong> for the newsletter.</li>
+            <li><strong><a href="https://www.djangoproject.com/" target="_blank">Django</a>:</strong> Our primary web framework, providing a robust foundation for our backend.</li>
+            <li><strong><a href="https://django-q2.readthedocs.io/" target="_blank">Django-Q2</a>:</strong> A task queue and scheduler for Django, helping us manage background tasks efficiently.</li>
+            <li><strong><a href="https://caprover.com/" target="_blank">CapRover</a>:</strong> Our deployment and server management tool, simplifying our DevOps processes.</li>
+            <li><strong><a href="https://github.com/" target="_blank">GitHub</a>:</strong> For version control and collaborative development of our codebase.</li>
+            <li><strong><a href="https://redis.io/" target="_blank">Redis</a>:</strong> An in-memory data structure store, used as a database, cache, and message broker.</li>
+            <li><strong><a href="https://www.postgresql.org/" target="_blank">PostgreSQL</a>:</strong> Our primary relational database management system.</li>
+            <li><strong><a href="https://www.anthropic.com/" target="_blank">Anthropic</a>:</strong> Leveraging AI capabilities to enhance our services.</li>
+            <li><strong><a href="https://replicate.com/" target="_blank">Replicate</a>:</strong> For AI model deployment and management.</li>
+            <li><strong><a href="https://opentelemetry.io/" target="_blank">OpenTelemetry</a>:</strong> Providing observability into our application's performance and behavior.</li>
+            <li><strong><a href="https://stimulus.hotwired.dev/" target="_blank">StimulusJS</a>:</strong> A modest JavaScript framework for the "sprinkles of interactivity" in our frontend.</li>
+            <li><strong><a href="https://whitenoise.evans.io/" target="_blank">WhiteNoise</a>:</strong> For efficient serving of static files.</li>
+        </ul>
+        <p>If you have any questions about our technology choices or are interested in learning more, feel free to contact us at <a href="mailto:rasul@osig.app">contact@osig.app</a>.</p>
+    </div>
+{% endblock content %}
