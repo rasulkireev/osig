@@ -88,6 +88,11 @@ class BlogView(ListView):
     context_object_name = "blog_posts"
     ordering = ["-created_at"]
 
+    def get_queryset(self):
+        from core.choices import BlogPostStatus
+
+        return BlogPost.objects.filter(status=BlogPostStatus.PUBLISHED).order_by("-created_at")
+
 
 class BlogPostView(DetailView):
     model = BlogPost
