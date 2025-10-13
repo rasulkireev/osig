@@ -3,6 +3,7 @@ from django.db import models
 from django.urls import reverse
 
 from core.base_models import BaseModel
+from core.choices import BlogPostStatus
 from core.model_utils import generate_random_key
 from osig.utils import get_osig_logger
 
@@ -86,6 +87,12 @@ class BlogPost(BaseModel):
     content = models.TextField()
     icon = models.ImageField(upload_to="blog_post_icons/", blank=True)
     image = models.ImageField(upload_to="blog_post_images/", blank=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=BlogPostStatus.choices,
+        default=BlogPostStatus.DRAFT,
+    )
 
     def __str__(self):
         return self.title

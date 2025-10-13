@@ -1,12 +1,15 @@
 from django.urls import path
 
 from core import views
+from core.api.views import api
 
 urlpatterns = [
     # pages
     path("", views.HomeView.as_view(), name="home"),
     path("settings", views.UserSettingsView.as_view(), name="settings"),
     path("how-to", views.HowToView.as_view(), name="how_to"),
+    # api
+    path("api/", api.urls),
     # blog
     path("blog/", views.BlogView.as_view(), name="blog_posts"),
     path("blog/<slug:slug>", views.BlogPostView.as_view(), name="blog_post"),
