@@ -14,10 +14,13 @@ from core.api.schemas import (
     RenderMetricsOut,
     SignOgUrlIn,
     SignOgUrlOut,
+    WordPressHelperIn,
+    WordPressHelperOut,
 )
 from core.models import BlogPost
 from core.render_observability import build_render_metrics
 from core.signing import build_signed_params
+from core.wordpress_helper import build_wordpress_render_params, wordpress_helper_snippet
 
 api = NinjaAPI(docs_url=None)
 
@@ -144,6 +147,51 @@ def build_onboarding_meta_tags(request: HttpRequest, data: OnboardingWizardIn):
         expires_at=expires_at.isoformat(),
         meta_tags=_build_meta_tags(signed_url=signed_url, title=data.title, subtitle=data.subtitle, page_url=data.page_url),
         validation_links=_build_validation_links(data.page_url),
+    )
+
+
+@api.post("/integrations/wordpress", response=WordPressHelperOut)
+def build_wordpress_helper_payload(request: HttpRequest, data: WordPressHelperIn):
+    base_url = request.build_absolute_uri(reverse("generate_image"))
+
+    mapping = build_wordpress_render_params(
+        page_url=data.page_url,
+        post_title=data.post_title,
+        post_name=data.post_name,
+        seo_title=data.seo_title,
+        title=data.title,
+        subtitle=data.subtitle,
+        excerpt=data.excerpt,
+        description=data.description,
+        featured_image=data.featured_image,
+        featured_image_url=data.featured_image_url,
+        logo_url=data.logo_url,
+        fallback_image_url=data.fallback_image_url,
+        eyebrow=data.eyebrow,
+        style=data.style,
+        site=data.site,
+        font=data.font,
+        key=data.key,
+        format=data.format,
+        quality=data.quality,
+        max_kb=data.max_kb,
+        version=data.version,
+    )
+
+    signed_params, expires_at = build_signed_params(
+        params=mapping.params,
+        expires_in_seconds=data.expires_in_seconds,
+    )
+
+    signed_url = f"{base_url}?{urlencode(signed_params)}"
+    snippet = wordpress_helper_snippet(base_url=base_url)
+
+    return WordPressHelperOut(
+        signed_url=signed_url,
+        expires_at=expires_at.isoformat(),
+        mapped_fields=mapping.mapped_fields,
+        fallbacks=mapping.fallbacks,
+        snippet=snippet,
     )
 
 

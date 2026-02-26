@@ -330,6 +330,27 @@ Example response:
 }
 ```
 
+### 7) WordPress helper MVP
+
+`POST /api/integrations/wordpress` maps common WordPress fields to OSIG params and returns a ready signed URL.
+
+- maps `post_title`, `post_name`, `excerpt/description`, `featured_image_url/featured_image/logo`
+- supports `quality`, `max_kb`, `version` and cache-friendly URL parameters
+- applies image fallback chain:
+  1. `featured_image_url`
+  2. `featured_image`
+  3. `logo_url`
+  4. `fallback_image_url`
+  5. no image fallback
+
+Returns:
+
+- `signed_url`
+- `expires_at`
+- `mapped_fields`
+- `fallbacks`
+- `snippet` (PHP helper sample)
+
 ## Roadmap
 
 - Add instruction on how to self host.
