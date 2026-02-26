@@ -1,11 +1,24 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 
 from core.base_models import BaseModel
 from core.choices import BlogPostStatus
 from core.model_utils import generate_random_key
 from osig.utils import get_osig_logger
+
+
+def _first_of_month(d):
+    return d.replace(day=1)
+
+
+def _today():
+    return timezone.now().date()
+
+
+def _month_start():
+    return _first_of_month(_today())
 
 logger = get_osig_logger(__name__)
 
@@ -48,6 +61,19 @@ class Profile(BaseModel):
             return ProfileStates.STRANGER
         latest_transition = self.state_transitions.latest("created_at")
         return latest_transition.to_state
+
+
+class ProfileUsage(BaseModel):
+    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="usage")
+    daily_count = models.PositiveIntegerField(default=0)
+    monthly_count = models.PositiveIntegerField(default=0)
+    daily_date = models.DateField(default=_today)
+    monthly_date = models.DateField(default=_month_start)
+    daily_warning_sent = models.BooleanField(default=False)
+    monthly_warning_sent = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Usage for {self.profile.key}"
 
 
 class ProfileStates(models.TextChoices):
