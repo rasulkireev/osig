@@ -6,8 +6,17 @@ from django.urls import reverse
 from ninja import NinjaAPI
 
 from core.api.auth import superuser_api_auth
-from core.api.schemas import BlogPostIn, BlogPostOut, OnboardingWizardIn, OnboardingWizardOut, SignOgUrlIn, SignOgUrlOut
+from core.api.schemas import (
+    BlogPostIn,
+    BlogPostOut,
+    OnboardingWizardIn,
+    OnboardingWizardOut,
+    RenderMetricsOut,
+    SignOgUrlIn,
+    SignOgUrlOut,
+)
 from core.models import BlogPost
+from core.render_observability import build_render_metrics
 from core.signing import build_signed_params
 
 api = NinjaAPI(docs_url=None)
@@ -135,4 +144,19 @@ def build_onboarding_meta_tags(request: HttpRequest, data: OnboardingWizardIn):
         expires_at=expires_at.isoformat(),
         meta_tags=_build_meta_tags(signed_url=signed_url, title=data.title, subtitle=data.subtitle, page_url=data.page_url),
         validation_links=_build_validation_links(data.page_url),
+    )
+
+
+@api.get("/admin/render-metrics", response=RenderMetricsOut, auth=[superuser_api_auth])
+def get_render_metrics(request: HttpRequest, hours: int = 24):
+    window_hours = max(1, min(int(hours), 24 * 30))
+    metrics = build_render_metrics(window_hours=window_hours)
+
+    return RenderMetricsOut(
+        window_hours=metrics.window_hours,
+        total_attempts=metrics.total_attempts,
+        failed_attempts=metrics.failed_attempts,
+        fail_rate_percent=metrics.fail_rate_percent,
+        p95_render_ms=metrics.p95_render_ms,
+        error_counts=metrics.error_counts,
     )

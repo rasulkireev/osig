@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib import admin
 
-from core.models import BlogPost, Profile, ProfileUsage
+from core.models import BlogPost, Profile, ProfileUsage, RenderAttempt
 
 
 class ProfileUsageAdmin(admin.ModelAdmin):
@@ -42,6 +42,27 @@ class ProfileUsageAdmin(admin.ModelAdmin):
         return "".join(flags) if flags else ""
 
 
+class RenderAttemptAdmin(admin.ModelAdmin):
+    list_display = (
+        "created_at",
+        "profile_key",
+        "style",
+        "success",
+        "error_type",
+        "duration_ms",
+        "attempt_number",
+    )
+    ordering = ("-created_at",)
+    list_filter = ("success", "style", "error_type")
+    search_fields = ("profile__key", "key", "style", "error_type")
+
+    @admin.display(ordering="profile__key", description="Profile key")
+    def profile_key(self, obj):
+        if obj.profile:
+            return obj.profile.key
+        return obj.key
+
+
 @admin.register(BlogPost)
 class BlogPostAdmin(admin.ModelAdmin):
     pass
@@ -52,7 +73,11 @@ class ProfileUsageModelAdmin(ProfileUsageAdmin):
     pass
 
 
+@admin.register(RenderAttempt)
+class RenderAttemptModelAdmin(RenderAttemptAdmin):
+    pass
+
+
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "key")
-

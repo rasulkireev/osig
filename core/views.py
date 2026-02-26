@@ -1,5 +1,6 @@
 import io
 from datetime import timedelta
+from time import perf_counter
 from urllib.parse import urlencode
 
 import stripe
@@ -23,6 +24,7 @@ from PIL import Image
 from core.forms import ProfileUpdateForm
 from core.image_styles import generate_image_router
 from core.models import BlogPost, Image as ImageModel, Profile
+from core.render_observability import classify_render_error, is_transient_error, record_render_attempt
 from core.signing import ExpiredSignatureError, InvalidSignatureError, verify_signed_params
 from core.tasks import regenerate_and_update_image, save_generated_image
 from core.usage import track_profile_usage
@@ -307,6 +309,7 @@ def generate_image(request):
         params["v"] = cache_version
 
     usage_state = None
+    profile = None
     if params["key"]:
         try:
             profile = Profile.objects.get(key=params["key"])
@@ -336,7 +339,53 @@ def generate_image(request):
         except FileNotFoundError:
             logger.error(f"Generated image file not found for image_id: {existing_image.id}")
 
-    image = generate_image_router(params)
-    async_task(save_generated_image, image, params)
+    max_attempts = max(1, int(getattr(settings, "OSIG_RENDER_MAX_ATTEMPTS", 2)))
 
-    return _build_image_response(image, output_format, signed_expires_at, usage_state=usage_state)
+    for attempt_number in range(1, max_attempts + 1):
+        attempt_started_at = perf_counter()
+
+        try:
+            image = generate_image_router(params)
+            duration_ms = int((perf_counter() - attempt_started_at) * 1000)
+
+            record_render_attempt(
+                profile=profile,
+                key=params.get("key", ""),
+                style=params.get("style", "base"),
+                success=True,
+                duration_ms=duration_ms,
+                attempt_number=attempt_number,
+            )
+
+            async_task(save_generated_image, image, params)
+            return _build_image_response(image, output_format, signed_expires_at, usage_state=usage_state)
+        except Exception as exc:
+            duration_ms = int((perf_counter() - attempt_started_at) * 1000)
+            error_type = classify_render_error(exc)
+
+            record_render_attempt(
+                profile=profile,
+                key=params.get("key", ""),
+                style=params.get("style", "base"),
+                success=False,
+                duration_ms=duration_ms,
+                error_type=error_type,
+                attempt_number=attempt_number,
+            )
+
+            should_retry = is_transient_error(error_type) and attempt_number < max_attempts
+            logger.warning(
+                "Render pipeline failed",
+                error_type=error_type,
+                attempt_number=attempt_number,
+                max_attempts=max_attempts,
+                should_retry=should_retry,
+                error=str(exc),
+            )
+
+            if should_retry:
+                continue
+
+            return HttpResponse(f"Render failed: {error_type}", status=502)
+
+    return HttpResponse("Render failed: unknown_error", status=502)

@@ -50,3 +50,12 @@ class OnboardingWizardOut(Schema):
     expires_at: str
     meta_tags: str
     validation_links: dict[str, str]
+
+
+class RenderMetricsOut(Schema):
+    window_hours: int
+    total_attempts: int
+    failed_attempts: int
+    fail_rate_percent: float
+    p95_render_ms: int | None
+    error_counts: dict[str, int]

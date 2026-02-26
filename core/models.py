@@ -105,6 +105,16 @@ class Image(BaseModel):
     generated_image = models.ImageField(upload_to="generated_images/", blank=True)
 
 
+class RenderAttempt(BaseModel):
+    profile = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL, related_name="render_attempts")
+    key = models.CharField(max_length=12, blank=True)
+    style = models.CharField(max_length=64, blank=True)
+    success = models.BooleanField(default=False)
+    error_type = models.CharField(max_length=64, blank=True)
+    duration_ms = models.PositiveIntegerField(default=0)
+    attempt_number = models.PositiveSmallIntegerField(default=1)
+
+
 class BlogPost(BaseModel):
     title = models.CharField(max_length=250)
     description = models.TextField(blank=True)

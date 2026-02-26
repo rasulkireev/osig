@@ -125,6 +125,8 @@ def create_image_buffer(img, output_format="png", quality=None, max_kb=None):
 
 
 def load_and_resize_image(image_url, width, height):
-    response = requests.get(image_url)
+    timeout_seconds = getattr(settings, "OSIG_IMAGE_FETCH_TIMEOUT_SECONDS", 8)
+    response = requests.get(image_url, timeout=timeout_seconds)
+    response.raise_for_status()
     img = Image.open(io.BytesIO(response.content)).convert("RGB")
     return img.resize((width, height), Image.LANCZOS)

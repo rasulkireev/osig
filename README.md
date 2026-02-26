@@ -297,6 +297,39 @@ Admin visibility:
 
 - usage records are visible in Django admin (`ProfileUsage`) and sorted by monthly usage for top-key visibility.
 
+### 6) Reliability + observability
+
+Render pipeline now ships with:
+
+- structured error taxonomy
+- transient retry policy
+- render-attempt metrics for fail-rate + p95 visibility
+
+Config:
+
+- `OSIG_RENDER_MAX_ATTEMPTS` (default `2`)
+- `OSIG_IMAGE_FETCH_TIMEOUT_SECONDS` (default `8`)
+
+Observability endpoint (superuser API key required):
+
+`GET /api/admin/render-metrics?api_key=<key>&hours=24`
+
+Example response:
+
+```json
+{
+  "window_hours": 24,
+  "total_attempts": 120,
+  "failed_attempts": 6,
+  "fail_rate_percent": 5.0,
+  "p95_render_ms": 284,
+  "error_counts": {
+    "transient_upstream_fetch": 4,
+    "validation_error": 2
+  }
+}
+```
+
 ## Roadmap
 
 - Add instruction on how to self host.
