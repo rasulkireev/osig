@@ -10,7 +10,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -23,6 +23,7 @@ from PIL import Image
 from core.forms import ProfileUpdateForm
 from core.image_styles import generate_image_router
 from core.models import BlogPost, Image as ImageModel, Profile
+from core.signing import ExpiredSignatureError, InvalidSignatureError, verify_signed_params
 from core.tasks import regenerate_and_update_image, save_generated_image
 from core.utils import check_if_profile_has_pro_subscription
 from osig.utils import get_osig_logger
@@ -199,8 +200,62 @@ def blank_square_image(request):
     return response
 
 
+def _normalize_output_format(raw_value: str | None) -> str:
+    value = (raw_value or "png").lower().strip()
+    return value if value in {"png", "jpeg"} else "png"
+
+
+def _normalize_quality(raw_value: str | None, output_format: str) -> int | None:
+    if raw_value in (None, ""):
+        return 85 if output_format == "jpeg" else None
+
+    try:
+        parsed = int(raw_value)
+    except ValueError:
+        return 85 if output_format == "jpeg" else None
+
+    return max(1, min(parsed, 100))
+
+
+def _normalize_max_kb(raw_value: str | None) -> int | None:
+    if raw_value in (None, ""):
+        return None
+
+    try:
+        parsed = int(raw_value)
+    except ValueError:
+        return None
+
+    return parsed if parsed > 0 else None
+
+
+def _content_type_for_output_format(output_format: str) -> str:
+    return "image/jpeg" if output_format == "jpeg" else "image/png"
+
+
+def _build_image_response(image_content, output_format: str, signed_expires_at=None) -> HttpResponse:
+    response = HttpResponse(image_content, content_type=_content_type_for_output_format(output_format))
+
+    if signed_expires_at is not None:
+        max_age = max(0, int((signed_expires_at - timezone.now()).total_seconds()))
+        response["Cache-Control"] = f"public, max-age={max_age}"
+    else:
+        response["Cache-Control"] = "public, max-age=31536000, immutable"
+
+    return response
+
+
 @require_GET
 def generate_image(request):
+    try:
+        signed_expires_at = verify_signed_params(request.GET)
+    except (InvalidSignatureError, ExpiredSignatureError):
+        return HttpResponseForbidden("Invalid or expired signature")
+
+    output_format = _normalize_output_format(request.GET.get("format"))
+    quality = _normalize_quality(request.GET.get("quality"), output_format)
+    max_kb = _normalize_max_kb(request.GET.get("max_kb"))
+
     params = {
         "key": request.GET.get("key", ""),
         "style": request.GET.get("style", "base"),
@@ -211,6 +266,17 @@ def generate_image(request):
         "eyebrow": request.GET.get("eyebrow"),
         "image_url": request.GET.get("image_url"),
     }
+
+    if output_format != "png":
+        params["format"] = output_format
+    if quality is not None:
+        params["quality"] = quality
+    if max_kb is not None:
+        params["max_kb"] = max_kb
+
+    cache_version = request.GET.get("v")
+    if cache_version:
+        params["v"] = cache_version
 
     if params["key"]:
         try:
@@ -230,11 +296,11 @@ def generate_image(request):
             async_task(regenerate_and_update_image, existing_image.id, params)
 
         try:
-            return HttpResponse(existing_image.generated_image, content_type="image/png")
+            return _build_image_response(existing_image.generated_image, output_format, signed_expires_at)
         except FileNotFoundError:
             logger.error(f"Generated image file not found for image_id: {existing_image.id}")
 
     image = generate_image_router(params)
     async_task(save_generated_image, image, params)
 
-    return HttpResponse(image, content_type="image/png")
+    return _build_image_response(image, output_format, signed_expires_at)

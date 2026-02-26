@@ -13,9 +13,13 @@ from osig.utils import get_osig_logger
 logger = get_osig_logger(__name__)
 
 
+def _get_output_extension(image_data):
+    return "jpeg" if image_data.get("format") == "jpeg" else "png"
+
+
 def save_generated_image(image, image_data):
     prefix = "key_" if image_data.get("key") else "no_key_"
-    image_filename = f"{prefix}{uuid.uuid4().hex[:12]}.png"
+    image_filename = f"{prefix}{uuid.uuid4().hex[:12]}.{_get_output_extension(image_data)}"
 
     try:
         with transaction.atomic():
@@ -43,7 +47,7 @@ def regenerate_and_update_image(image_id, image_data):
             return "Old image not found in S3, skipping regeneration"
 
         prefix = "key_" if image_data.get("key") else "no_key_"
-        image_filename = f"{prefix}{uuid.uuid4().hex[:12]}.png"
+        image_filename = f"{prefix}{uuid.uuid4().hex[:12]}.{_get_output_extension(image_data)}"
         image_content = ContentFile(new_image.getvalue())
 
         for key, value in image_data.items():
