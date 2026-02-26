@@ -39,7 +39,13 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["site_choices"] = [("x", "X (Twitter)"), ("meta", "meta")]
-        context["style_choices"] = [("base", "Base"), ("logo", "Logo")]
+        context["style_choices"] = [
+            ("base", "Base"),
+            ("logo", "Logo"),
+            ("job_classic", "Job Classic"),
+            ("job_logo", "Job Logo"),
+            ("job_clean", "Job Clean"),
+        ]
         context["font_choices"] = [("helvetica", "Helvetica"), ("markerfelt", "Marker Felt"), ("papyrus", "Papyrus")]
 
         if self.request.user.is_authenticated:
@@ -256,6 +262,8 @@ def generate_image(request):
     quality = _normalize_quality(request.GET.get("quality"), output_format)
     max_kb = _normalize_max_kb(request.GET.get("max_kb"))
 
+    image_url = request.GET.get("image_url") or request.GET.get("image_or_logo")
+
     params = {
         "key": request.GET.get("key", ""),
         "style": request.GET.get("style", "base"),
@@ -264,7 +272,7 @@ def generate_image(request):
         "title": request.GET.get("title"),
         "subtitle": request.GET.get("subtitle"),
         "eyebrow": request.GET.get("eyebrow"),
-        "image_url": request.GET.get("image_url"),
+        "image_url": image_url,
     }
 
     if output_format != "png":

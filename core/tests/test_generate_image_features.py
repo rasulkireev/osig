@@ -8,6 +8,7 @@ import pytest
 from django.utils import timezone
 from PIL import Image
 
+from core.image_styles import _safe_truncate, generate_job_clean_image
 from core.signing import build_signed_params
 
 
@@ -151,6 +152,69 @@ class TestOutputFormatAndCompression:
         assert second.status_code == 200
         assert first.content == second.content
         assert first.content != lower_quality.content
+
+
+@pytest.mark.django_db
+class TestJobBoardTemplatePack:
+    @pytest.mark.parametrize("style", ["job_classic", "job_logo", "job_clean"])
+    def test_generate_image_supports_job_board_styles(self, client, disable_async_tasks, style):
+        response = client.get(
+            "/g",
+            data={
+                "style": style,
+                "site": "x",
+                "title": "Senior Django Engineer",
+                "subtitle": "Ship production systems for real users",
+                "eyebrow": "Remote",
+            },
+        )
+
+        assert response.status_code == 200
+        assert response["Content-Type"] == "image/png"
+
+    def test_image_or_logo_alias_is_used_when_image_url_is_missing(self, client, disable_async_tasks, monkeypatch):
+        import core.views as core_views
+
+        captured_params = {}
+
+        def fake_router(params):
+            captured_params.update(params)
+            return _tiny_png_buffer()
+
+        monkeypatch.setattr(core_views, "generate_image_router", fake_router)
+
+        response = client.get(
+            "/g",
+            data={
+                "style": "job_logo",
+                "title": "Founding Designer",
+                "subtitle": "Craft our product experience",
+                "image_or_logo": "https://example.com/logo.png",
+            },
+        )
+
+        assert response.status_code == 200
+        assert captured_params["image_url"] == "https://example.com/logo.png"
+
+    def test_safe_truncation_limits_copy_length(self):
+        long_text = "A" * 500
+        truncated = _safe_truncate(long_text, 64)
+
+        assert len(truncated) <= 64
+        assert truncated.endswith("...")
+
+    def test_job_clean_template_handles_long_copy_without_errors(self):
+        image = generate_job_clean_image(
+            profile_id=None,
+            site="x",
+            font="helvetica",
+            title="Senior Python Engineer " * 30,
+            subtitle="Build reliable systems and own customer outcomes. " * 40,
+            eyebrow="Hiring now " * 20,
+            image_url=None,
+        )
+
+        assert image.getbuffer().nbytes > 0
 
 
 @pytest.mark.django_db
