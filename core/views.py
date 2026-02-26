@@ -89,6 +89,10 @@ class HowToView(TemplateView):
     template_name = "pages/how-to.html"
 
 
+class OnboardingWizardView(TemplateView):
+    template_name = "pages/onboarding-wizard.html"
+
+
 class BlogView(ListView):
     model = BlogPost
     template_name = "blog/blog_posts.html"

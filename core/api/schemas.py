@@ -27,3 +27,26 @@ class SignOgUrlIn(Schema):
 class SignOgUrlOut(Schema):
     signed_url: str
     expires_at: str
+
+
+class OnboardingWizardIn(Schema):
+    page_url: str = "https://osig.app"
+    style: str = "base"
+    site: str = "x"
+    font: str = "helvetica"
+    title: str = ""
+    subtitle: str = ""
+    eyebrow: str = ""
+    image_url: str = ""
+    format: str = "png"
+    quality: str | int | None = None
+    max_kb: str | int | None = None
+    version: str = ""
+    expires_in_seconds: int = 3600
+
+
+class OnboardingWizardOut(Schema):
+    signed_url: str
+    expires_at: str
+    meta_tags: str
+    validation_links: dict[str, str]
