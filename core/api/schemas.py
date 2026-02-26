@@ -17,3 +17,13 @@ class BlogPostIn(Schema):
 class BlogPostOut(Schema):
     status: str
     message: str
+
+
+class SignOgUrlIn(Schema):
+    params: dict[str, str | int | float | bool]
+    expires_in_seconds: int = 3600
+
+
+class SignOgUrlOut(Schema):
+    signed_url: str
+    expires_at: str

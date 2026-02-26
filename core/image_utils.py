@@ -82,10 +82,44 @@ def load_font(font, size):
         return ImageFont.load_default().font_variant(size=size)
 
 
-def create_image_buffer(img):
+def _render_jpeg_buffer(img, quality):
+    jpeg_buffer = io.BytesIO()
+    img.convert("RGB").save(
+        jpeg_buffer,
+        format="JPEG",
+        quality=quality,
+        optimize=True,
+        progressive=False,
+    )
+    jpeg_buffer.seek(0)
+    return jpeg_buffer
+
+
+def create_image_buffer(img, output_format="png", quality=None, max_kb=None):
+    output_format = (output_format or "png").lower()
+
+    if output_format == "jpeg":
+        jpeg_quality = 85 if quality is None else max(1, min(int(quality), 100))
+        buffer = _render_jpeg_buffer(img, jpeg_quality)
+
+        if max_kb:
+            target_size = int(max_kb) * 1024
+            while len(buffer.getvalue()) > target_size and jpeg_quality > 20:
+                jpeg_quality = max(20, jpeg_quality - 5)
+                buffer = _render_jpeg_buffer(img, jpeg_quality)
+
+        return buffer
+
     buffer = io.BytesIO()
     img = img.convert("RGB")
-    img.save(buffer, format="PNG")
+
+    if quality is None:
+        img.save(buffer, format="PNG")
+    else:
+        png_quality = max(1, min(int(quality), 100))
+        compress_level = round((100 - png_quality) * 9 / 100)
+        img.save(buffer, format="PNG", optimize=True, compress_level=compress_level)
+
     buffer.seek(0)
     return buffer
 

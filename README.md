@@ -33,6 +33,13 @@ Below is a list of all parameters we currently support:
 *   **subtitle**: Subtitle text
 *   **eyebrow**: Eyebrow text
 *   **image\_url**: URL of the background image
+*   **format**: Output format (`png` or `jpeg`, default: `png`)
+*   **quality**: Compression quality (`1-100`).
+    * For `jpeg`: defaults to `85` if omitted.
+    * For `png`: optional, controls compression level when provided.
+*   **max_kb**: Optional target size in KB (best-effort, currently tuned for `jpeg`).
+*   **v**: Optional cache-busting version token. Change this when you want social previews to refresh.
+*   **exp** + **sig**: Optional expiry/signature pair for tamper-proof signed URLs (generated via `POST /api/sign`).
 
 ### Usage
 
@@ -114,8 +121,78 @@ As people use this, I will start adding more specific instructions on how to add
 
 ### API
 
-I will be adding more instruction on how you can generate those images programmatically via an API soon.
+#### 1) Generate signed OG URLs
 
+Use this endpoint when you need tamper-proof URLs with expiration.
+
+`POST /api/sign`
+
+Request body example:
+
+```json
+{
+  "params": {
+    "style": "logo",
+    "site": "x",
+    "title": "Narrative",
+    "subtitle": "Founding Senior Software Engineer",
+    "image_url": "https://example.com/logo.png",
+    "format": "jpeg",
+    "quality": 80,
+    "v": "2026-02-26"
+  },
+  "expires_in_seconds": 3600
+}
+```
+
+Response shape:
+
+```json
+{
+  "signed_url": "https://osig.app/g?...&exp=...&sig=...",
+  "expires_at": "2026-02-26T12:34:56+00:00"
+}
+```
+
+Validation rules on `GET /g`:
+
+- Tampered signed params -> `403`
+- Expired signed links -> `403`
+- Unsigned links still work for backwards compatibility
+
+#### 2) Output controls
+
+`GET /g` now supports:
+
+- `format=png|jpeg`
+- `quality=1..100`
+- `max_kb=<int>` (best-effort size targeting for jpeg)
+
+Content type is set explicitly:
+
+- PNG -> `image/png`
+- JPEG -> `image/jpeg`
+
+#### 3) Cache/versioning workflow
+
+`GET /g` responses now include explicit cache headers.
+
+- Unsigned URLs: `Cache-Control: public, max-age=31536000, immutable`
+- Signed URLs: `Cache-Control: public, max-age=<seconds until exp>`
+
+Use `v` to force cache key rotation without changing title/subtitle payload:
+
+1. Keep your normal OG params.
+2. When image content changes, bump `v` (for example, `v=2026-03-01`).
+3. Re-embed/re-publish URLs with the new `v` value.
+4. If using signed URLs, regenerate via `POST /api/sign` so `sig` matches the new params.
+
+Social preview refresh checklist:
+
+- Bump `v`
+- Regenerate signed URL (if signed)
+- Re-deploy metadata with the new URL
+- Re-validate on social debuggers (X Card Validator / LinkedIn Post Inspector / Facebook Sharing Debugger)
 
 ## Roadmap
 

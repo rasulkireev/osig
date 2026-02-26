@@ -25,6 +25,9 @@ def generate_image_router(image_data):
             title=image_data.get("title"),
             subtitle=image_data.get("subtitle"),
             image_url=image_data.get("image_url"),
+            output_format=image_data.get("format", "png"),
+            quality=image_data.get("quality"),
+            max_kb=image_data.get("max_kb"),
         )
     else:
         return generate_base_image(
@@ -35,6 +38,9 @@ def generate_image_router(image_data):
             subtitle=image_data.get("subtitle"),
             eyebrow=image_data.get("eyebrow"),
             image_url=image_data.get("image_url"),
+            output_format=image_data.get("format", "png"),
+            quality=image_data.get("quality"),
+            max_kb=image_data.get("max_kb"),
         )
 
 
@@ -46,6 +52,9 @@ def generate_base_image(
     subtitle,
     eyebrow,
     image_url,
+    output_format="png",
+    quality=None,
+    max_kb=None,
 ):
     logger.info(
         "Generating base OG image",
@@ -128,10 +137,20 @@ def generate_base_image(
     if not has_pro_subscription:
         add_watermark(img, draw, width, height)
 
-    return create_image_buffer(img)
+    return create_image_buffer(img, output_format=output_format, quality=quality, max_kb=max_kb)
 
 
-def generate_logo_image(profile_id, site, font, title, subtitle, image_url):
+def generate_logo_image(
+    profile_id,
+    site,
+    font,
+    title,
+    subtitle,
+    image_url,
+    output_format="png",
+    quality=None,
+    max_kb=None,
+):
     logger.info(
         "Generating logo OG image",
         profile_id=profile_id,
@@ -199,4 +218,4 @@ def generate_logo_image(profile_id, site, font, title, subtitle, image_url):
     if not has_pro_subscription:
         add_watermark(img, draw, width, height)
 
-    return create_image_buffer(img)
+    return create_image_buffer(img, output_format=output_format, quality=quality, max_kb=max_kb)
