@@ -59,3 +59,36 @@ class RenderMetricsOut(Schema):
     fail_rate_percent: float
     p95_render_ms: int | None
     error_counts: dict[str, int]
+
+
+class WordPressHelperIn(Schema):
+    page_url: str
+    post_title: str = ""
+    post_name: str = ""
+    seo_title: str = ""
+    title: str = ""
+    subtitle: str = ""
+    excerpt: str = ""
+    description: str = ""
+    featured_image: str = ""
+    featured_image_url: str = ""
+    logo_url: str = ""
+    fallback_image_url: str = ""
+    eyebrow: str = ""
+    style: str = "job_logo"
+    site: str = "x"
+    font: str = "helvetica"
+    key: str = ""
+    format: str = "png"
+    quality: str | int | None = None
+    max_kb: str | int | None = None
+    version: str = ""
+    expires_in_seconds: int = 3600
+
+
+class WordPressHelperOut(Schema):
+    signed_url: str
+    expires_at: str
+    mapped_fields: dict[str, str]
+    fallbacks: list[str]
+    snippet: str
