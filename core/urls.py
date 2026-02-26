@@ -8,6 +8,7 @@ urlpatterns = [
     path("", views.HomeView.as_view(), name="home"),
     path("settings", views.UserSettingsView.as_view(), name="settings"),
     path("how-to", views.HowToView.as_view(), name="how_to"),
+    path("onboarding", views.OnboardingWizardView.as_view(), name="onboarding_wizard"),
     # api
     path("api/", api.urls),
     # blog

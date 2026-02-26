@@ -228,6 +228,49 @@ Social preview refresh checklist:
 - Re-deploy metadata with the new URL
 - Re-validate on social debuggers (X Card Validator / LinkedIn Post Inspector / Facebook Sharing Debugger)
 
+### 4) Onboarding wizard helper
+
+`GET /onboarding` now exposes a 5-step guided wizard that outputs:
+
+- signed OG image URL (reuses `POST /api/sign`)
+- copy-ready OG/Twitter meta tags
+- validation links (X/Twitter, Facebook, LinkedIn, Google rich results)
+
+Backend helper endpoint used by the wizard:
+
+`POST /api/onboarding/meta`
+
+Example:
+
+```json
+{
+  "page_url": "https://example.com/jobs/senior-engineer",
+  "style": "job_logo",
+  "site": "x",
+  "font": "helvetica",
+  "title": "Senior Engineer",
+  "subtitle": "Ship reliable backend systems",
+  "eyebrow": "Remote · Full-time",
+  "image_url": "https://example.com/logo.png",
+  "format": "jpeg",
+  "quality": 80,
+  "version": "v2026-02-26"
+}
+```
+
+Response:
+
+```json
+{
+  "signed_url": "https://osig.app/g?...&exp=...&sig=...",
+  "expires_at": "2026-02-26T12:34:56+00:00",
+  "meta_tags": "<meta ... />\n<meta ... />",
+  "validation_links": {
+    "Twitter/X Card Validator": "https://cards-dev.twitter.com/validator?url=..."
+  }
+}
+```
+
 ## Roadmap
 
 - Add instruction on how to self host.
