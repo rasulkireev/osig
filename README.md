@@ -271,6 +271,32 @@ Response:
 }
 ```
 
+### 5) Usage metering + quota enforcement
+
+Keyed requests to `/g` now include per-key usage metering with configurable limits.
+
+Config via environment:
+
+- `OSIG_DAILY_USAGE_LIMIT` (default: `1000`)
+- `OSIG_MONTHLY_USAGE_LIMIT` (default: `10000`)
+- `OSIG_USAGE_WARNING_PERCENT` (default: `0.8`)
+
+Behavior:
+
+- warns when usage crosses warning threshold (`X-OSIG-Quota-Warning`)
+- blocks at configured quota with `429`
+- exposes counters via:
+  - `X-OSIG-Daily-Usage`
+  - `X-OSIG-Monthly-Usage`
+
+Backward compatibility:
+
+- existing no-key `/g` flows remain unchanged
+
+Admin visibility:
+
+- usage records are visible in Django admin (`ProfileUsage`) and sorted by monthly usage for top-key visibility.
+
 ## Roadmap
 
 - Add instruction on how to self host.

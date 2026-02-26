@@ -58,6 +58,10 @@ DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")
 
+OSIG_DAILY_USAGE_LIMIT = env.int("OSIG_DAILY_USAGE_LIMIT", default=1000)
+OSIG_MONTHLY_USAGE_LIMIT = env.int("OSIG_MONTHLY_USAGE_LIMIT", default=10000)
+OSIG_USAGE_WARNING_PERCENT = env.float("OSIG_USAGE_WARNING_PERCENT", default=0.8)
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

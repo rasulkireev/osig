@@ -25,6 +25,7 @@ from core.image_styles import generate_image_router
 from core.models import BlogPost, Image as ImageModel, Profile
 from core.signing import ExpiredSignatureError, InvalidSignatureError, verify_signed_params
 from core.tasks import regenerate_and_update_image, save_generated_image
+from core.usage import track_profile_usage
 from core.utils import check_if_profile_has_pro_subscription
 from osig.utils import get_osig_logger
 
@@ -243,7 +244,22 @@ def _content_type_for_output_format(output_format: str) -> str:
     return "image/jpeg" if output_format == "jpeg" else "image/png"
 
 
-def _build_image_response(image_content, output_format: str, signed_expires_at=None) -> HttpResponse:
+def _attach_usage_headers(response, usage_state) -> HttpResponse:
+    if usage_state is None:
+        return response
+
+    if usage_state.daily_limit:
+        response["X-OSIG-Daily-Usage"] = f"{usage_state.daily_count}/{usage_state.daily_limit}"
+    if usage_state.monthly_limit:
+        response["X-OSIG-Monthly-Usage"] = f"{usage_state.monthly_count}/{usage_state.monthly_limit}"
+
+    if usage_state.warnings:
+        response["X-OSIG-Quota-Warning"] = ",".join(usage_state.warnings)
+
+    return response
+
+
+def _build_image_response(image_content, output_format: str, signed_expires_at=None, usage_state=None) -> HttpResponse:
     response = HttpResponse(image_content, content_type=_content_type_for_output_format(output_format))
 
     if signed_expires_at is not None:
@@ -252,7 +268,7 @@ def _build_image_response(image_content, output_format: str, signed_expires_at=N
     else:
         response["Cache-Control"] = "public, max-age=31536000, immutable"
 
-    return response
+    return _attach_usage_headers(response, usage_state)
 
 
 @require_GET
@@ -290,10 +306,18 @@ def generate_image(request):
     if cache_version:
         params["v"] = cache_version
 
+    usage_state = None
     if params["key"]:
         try:
             profile = Profile.objects.get(key=params["key"])
             params["profile_id"] = profile.id
+            usage_state = track_profile_usage(profile)
+
+            if usage_state.blocked:
+                return HttpResponse(
+                    f"Usage quota exceeded: {'/'.join(usage_state.blocked_reasons)}",
+                    status=429,
+                )
         except Profile.DoesNotExist:
             logger.error("Profile not found for key", key=params["key"])
 
@@ -308,11 +332,11 @@ def generate_image(request):
             async_task(regenerate_and_update_image, existing_image.id, params)
 
         try:
-            return _build_image_response(existing_image.generated_image, output_format, signed_expires_at)
+            return _build_image_response(existing_image.generated_image, output_format, signed_expires_at, usage_state=usage_state)
         except FileNotFoundError:
             logger.error(f"Generated image file not found for image_id: {existing_image.id}")
 
     image = generate_image_router(params)
     async_task(save_generated_image, image, params)
 
-    return _build_image_response(image, output_format, signed_expires_at)
+    return _build_image_response(image, output_format, signed_expires_at, usage_state=usage_state)
