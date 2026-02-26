@@ -22,6 +22,9 @@ Below is a list of all parameters we currently support:
 *   **style**: Image style (default: "base")
     *   \- [base](#base)
     *   \- [logo](#logo)
+    *   \- [job_classic](#job-board-template-pack-v1)
+    *   \- [job_logo](#job-board-template-pack-v1)
+    *   \- [job_clean](#job-board-template-pack-v1)
 *   **site**: This dictates the size of the image (default: "x")
     *   \- x (1600 by 900)
     *   \- meta (1200 by 630)
@@ -33,6 +36,7 @@ Below is a list of all parameters we currently support:
 *   **subtitle**: Subtitle text
 *   **eyebrow**: Eyebrow text
 *   **image\_url**: URL of the background image
+*   **image\_or\_logo**: Alias for `image_url`, recommended for job-board templates where the asset can be either a hero image or company logo.
 *   **format**: Output format (`png` or `jpeg`, default: `png`)
 *   **quality**: Compression quality (`1-100`).
     * For `jpeg`: defaults to `85` if omitted.
@@ -91,6 +95,36 @@ https://osig.app/g?
   &title=Narrative
   &subtitle=Founding Senior Software Engineer
   &image_url=http://res.cloudinary.com/built-with-django/image/upload/v1728024021/user-profile-image-prod/hhxfplsthiaytuttoamc.jpg
+```
+
+#### Job-board template pack v1
+
+Wave 1 ships three production-ready job-board styles:
+
+- `job_classic`: full-bleed background + high-contrast copy
+- `job_logo`: role-focused copy with circular logo slot
+- `job_clean`: minimal white layout with accent bar and logo slot
+
+All three templates support the same core fields:
+
+- `title`
+- `subtitle`
+- `eyebrow`
+- `image_or_logo` (alias for `image_url`)
+
+Copy is safely truncated to keep layouts stable for long job titles/descriptions.
+
+Example:
+
+```
+https://osig.app/g?
+  site=x
+  &style=job_logo
+  &font=helvetica
+  &title=Senior Django Engineer
+  &subtitle=Build reliable product features and own the roadmap.
+  &eyebrow=Remote · Full-time
+  &image_or_logo=https://example.com/company-logo.png
 ```
 
 ### Fonts
