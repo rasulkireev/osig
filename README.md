@@ -1,5 +1,11 @@
 # OSIG
 
+> [!IMPORTANT]
+> This repository is archived and no longer maintained. OSIG was built on an
+> aging technology stack, and modern AI agents can now solve this image-generation
+> use case directly without a dedicated application. There is therefore no need
+> to continue developing or operating this app.
+
 OSIG renders deterministic Open Graph and Twitter/X preview images from typed canvas specs.
 
 Core references:
